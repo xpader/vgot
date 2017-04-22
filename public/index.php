@@ -17,14 +17,14 @@ Bootstrap::registerNamespaces([
 ]);
 
 Bootstrap::systemConfig([
-	'configPath' => BASE_PATH.'/resources/config',
-	'viewPath' => BASE_PATH.'/resources/views',
-	'commonConfigPath' => null,
-	'commonViewsPath' => null,
-	'autoloadScanDir' => [
+	'controller_namespace' => 'app/Controllers',
+	'config_path' => BASE_PATH.'/app/Config',
+	'view_path' => BASE_PATH.'/app/Views',
+	'autoload_scan_dir' => [
 		BASE_PATH.'/libs'
 	],
-	'controller_namespace' => 'app/Controllers'
+	'common_config_path' => null,
+	'common_ciews_path' => null,
 ]);
 
 Bootstrap::run();
