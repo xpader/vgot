@@ -17,7 +17,7 @@ Bootstrap::registerNamespaces([
 ]);
 
 Bootstrap::systemConfig([
-	'controller_namespace' => 'app/Controllers',
+	'controller_namespace' => '\app\Controllers',
 	'config_path' => BASE_PATH.'/app/Config',
 	'view_path' => BASE_PATH.'/app/Views',
 	'autoload_scan_dirs' => [
@@ -28,10 +28,3 @@ Bootstrap::systemConfig([
 ]);
 
 Bootstrap::run();
-
-$r = new \vgot\Core\Router();
-var_dump($r);
-
-\app\Services\TransferService::test();
-
-\vgot\app();

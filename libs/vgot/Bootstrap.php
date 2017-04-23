@@ -1,9 +1,11 @@
 <?php
 
 namespace vgot;
+
 use vgot\Core\Application;
 use vgot\Core\Config;
 use vgot\Core\Router;
+use vgot\Exceptions\HttpNotFoundException;
 
 /**
  * Created by PhpStorm.
@@ -16,6 +18,10 @@ class Bootstrap
 
 	protected static $archPath = [];
 	protected static $namespaces = [];
+
+	/**
+	 * @var Application
+	 */
 	protected static $application;
 
 	/**
@@ -72,19 +78,50 @@ class Bootstrap
 		return false;
 	}
 
-
+	/**
+	 * Run Application
+	 */
 	public static function run()
 	{
 		//Register autoloads
 		spl_autoload_register('\vgot\Bootstrap::loadClass');
 
-		$app = new Application();
+		self::$application = $app = new Application();
+
 		$app->config = new Config(self::$archPath['config_path'], self::$archPath['common_config_path']);
-		$app->router = new Router();
+		$app->config->load('application');
 
-		self::$application = $app;
+		$app->router = new Router(self::$archPath['controller_namespace']);
+		$uri = $app->router->parse();
 
-		echo "Hello World\n";
+		self::launchController($uri);
+	}
+
+	protected static function launchController($uri)
+	{
+		//Controller not found
+		if ($uri === false) {
+			throw new HttpNotFoundException();
+		}
+
+		$app = self::$application;
+		$app->controller = $instance = new $uri['controller'];
+
+		$action = !empty($uri['params'][0]) ? $uri['params'][0] : $app->config->get('default_action');
+
+		if ($app->config->get('case_symbol')) {
+			$action = $app->router->symbolConvert($action);
+		}
+
+		if (is_callable([$instance, $action])) {
+			unset($uri['params'][0]);
+		} elseif (is_callable([$instance, '_redirect'])) {
+			$action = '_redirect';
+		} else { //Action not found
+			throw new HttpNotFoundException();
+		}
+
+		call_user_func_array([$instance, $action], $uri['params']);
 	}
 
 	public static function getAppInstance()
@@ -94,6 +131,11 @@ class Bootstrap
 	
 }
 
+/**
+ * 获取应用实例
+ *
+ * @return Application
+ */
 function app() {
 	return Bootstrap::getAppInstance();
 }
