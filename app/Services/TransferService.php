@@ -15,5 +15,10 @@ class TransferService
 	{
 		echo 'Hello World';
 	}
+
+	public static function test()
+	{
+		echo "Test Transfer";
+	}
 	
 }

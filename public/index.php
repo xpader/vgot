@@ -8,9 +8,9 @@
 
 use vgot\Bootstrap;
 
-define('BASE_PATH', __DIR__.'/..');
+define('BASE_PATH', realpath(__DIR__.'/..'));
 
-require BASE_PATH.'/libs/vgot/bootstrap.php';
+require BASE_PATH.'/libs/vgot/Bootstrap.php';
 
 Bootstrap::registerNamespaces([
 	'app' => BASE_PATH.'/app',
@@ -20,7 +20,7 @@ Bootstrap::systemConfig([
 	'controller_namespace' => 'app/Controllers',
 	'config_path' => BASE_PATH.'/app/Config',
 	'view_path' => BASE_PATH.'/app/Views',
-	'autoload_scan_dir' => [
+	'autoload_scan_dirs' => [
 		BASE_PATH.'/libs'
 	],
 	'common_config_path' => null,
@@ -28,3 +28,10 @@ Bootstrap::systemConfig([
 ]);
 
 Bootstrap::run();
+
+$r = new \vgot\Core\Router();
+var_dump($r);
+
+\app\Services\TransferService::test();
+
+\vgot\app();
