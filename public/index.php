@@ -19,12 +19,12 @@ Bootstrap::registerNamespaces([
 Bootstrap::systemConfig([
 	'controller_namespace' => '\app\Controllers',
 	'config_path' => BASE_PATH.'/app/Config',
-	'view_path' => BASE_PATH.'/app/Views',
+	'views_path' => BASE_PATH.'/app/Views',
 	'autoload_scan_dirs' => [
 		BASE_PATH.'/libs'
 	],
 	'common_config_path' => null,
-	'common_ciews_path' => null,
+	'common_views_path' => null,
 ]);
 
 Bootstrap::run();
