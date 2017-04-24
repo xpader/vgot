@@ -42,7 +42,7 @@ class Config
 	 * @param bool $useSection Is config in a stand alone space, if true, you must call get use $config
 	 * @param bool $return Return config array
 	 * @param bool $forceReload Is force reload file
-	 * @return void|array
+	 * @return mixed
 	 * @throws
 	 */
 	public function load($name, $useSection=false, $return=false, $forceReload=false) {

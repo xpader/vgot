@@ -21,6 +21,7 @@ class Application
 	protected $router;
 	protected $config;
 	protected $controller;
+	protected $db;
 
 	public function __get($name)
 	{
