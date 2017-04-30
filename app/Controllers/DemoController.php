@@ -7,9 +7,9 @@
  */
 namespace app\Controllers;
 
-use vgot\Exceptions\ApplicationException;
+use vgot2\Exceptions\ApplicationException;
 
-class DemoController extends \vgot\Core\Controller
+class DemoController extends \vgot2\Core\Controller
 {
 
 	public function index()

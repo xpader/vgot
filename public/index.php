@@ -6,7 +6,7 @@
  * Time: 01:42
  */
 
-use vgot\Boot;
+use vgot2\Boot;
 
 define('BASE_PATH', realpath(__DIR__.'/..'));
 
