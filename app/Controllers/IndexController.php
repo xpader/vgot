@@ -34,6 +34,8 @@ class IndexController extends \vgot\Core\Controller
 	public function caseAct($id=0)
 	{
 		echo 'I\'m Case Act='.$id;
+
+
 	}
 
 }

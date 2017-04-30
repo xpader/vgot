@@ -6,17 +6,17 @@
  * Time: 01:42
  */
 
-use vgot\Bootstrap;
+use vgot\Boot;
 
 define('BASE_PATH', realpath(__DIR__.'/..'));
 
-require BASE_PATH.'/libs/vgot/Bootstrap.php';
+require BASE_PATH.'/libs/vgot/Boot.php';
 
-Bootstrap::registerNamespaces([
+Boot::registerNamespaces([
 	'app' => BASE_PATH.'/app',
 ]);
 
-Bootstrap::systemConfig([
+Boot::systemConfig([
 	'controller_namespace' => '\app\Controllers',
 	'config_path' => BASE_PATH.'/app/Config',
 	'views_path' => BASE_PATH.'/app/Views',
@@ -27,4 +27,4 @@ Bootstrap::systemConfig([
 	'common_views_path' => null,
 ]);
 
-Bootstrap::run();
+Boot::run();
