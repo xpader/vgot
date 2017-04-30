@@ -8,7 +8,7 @@
  */
 namespace app\Controllers;
 
-class IndexController extends \vgot2\Core\Controller
+class IndexController extends \vgot\Core\Controller
 {
 	
 	public function index()
