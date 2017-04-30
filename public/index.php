@@ -10,6 +10,9 @@ use vgot\Boot;
 
 define('BASE_PATH', realpath(__DIR__.'/..'));
 
+ini_set('display_errors', true);
+ini_set('error_reporting', E_ALL);
+
 require BASE_PATH.'/libs/vgot/Boot.php';
 
 Boot::registerNamespaces([
