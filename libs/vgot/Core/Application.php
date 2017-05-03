@@ -58,7 +58,7 @@ class Application
 	 */
 	public function __set($name, $value)
 	{
-		if (!isset($this->$name) || $this->$name === null) {
+		if (!isset($this->$name)) {
 			$this->$name = $value;
 		} else {
 			trigger_error("Uncaught Error: Cannot access protected property \\vgot\\Core\\Application::\${$name}", E_USER_WARNING);
@@ -115,7 +115,7 @@ class Application
 	public function register($name, $object)
 	{
 		if (isset($this->$name)) {
-			throw new ApplicationException("Can not register object because name exists '$name' in instance.");
+			throw new ApplicationException("Can not register object because name '$name' exists in instance.");
 		}
 
 		$this->$name = $object;

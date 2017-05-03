@@ -9,4 +9,4 @@
  */
 ?>
 <h1>500 Internal Server Error</h1>
-<pre><?php throw $exception; ?></pre>
+<pre style="font-size:14px;"><?php throw $exception; ?></pre>

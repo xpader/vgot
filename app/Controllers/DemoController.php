@@ -7,7 +7,7 @@
  */
 namespace app\Controllers;
 
-use vgot\Exceptions\ApplicationException;
+use vgot\Database\DB;
 
 class DemoController extends \vgot\Core\Controller
 {
@@ -30,7 +30,22 @@ class DemoController extends \vgot\Core\Controller
 
 	public function view()
 	{
+		$this->render('index/index');
+	}
 
+	public function db()
+	{
+		$db = DB::connection();
+
+		var_dump($db);
+
+		$app = \vgot\app();
+		$app->register('db', $db);
+
+		echo 'Hello World';
+
+
+		$app->register('db', $db);
 	}
 
 }
