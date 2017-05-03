@@ -7,6 +7,7 @@
  */
 namespace vgot\Core;
 
+use vgot\Exceptions\ApplicationException;
 use vgot\Exceptions\HttpNotFoundException;
 
 /**
@@ -102,6 +103,22 @@ class Application
 		call_user_func_array([$instance, $action], $uri['params']);
 
 		$this->output->flush();
+	}
+
+	/**
+	 * 向实例中注册对象
+	 *
+	 * @param $name
+	 * @param $object
+	 * @throws ApplicationException
+	 */
+	public function register($name, $object)
+	{
+		if (isset($this->$name)) {
+			throw new ApplicationException("Can not register object because name exists '$name' in instance.");
+		}
+
+		$this->$name = $object;
 	}
 
 	/**
