@@ -37,15 +37,7 @@ class DemoController extends \vgot\Core\Controller
 	{
 		$db = DB::connection();
 
-		var_dump($db);
 
-		$app = \vgot\app();
-		$app->register('db', $db);
-
-		echo 'Hello World';
-
-
-		$app->register('db', $db);
 	}
 
 }

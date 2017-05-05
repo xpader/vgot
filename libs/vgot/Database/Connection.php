@@ -32,7 +32,7 @@ class Connection
 
 	public function __construct($config)
 	{
-		$driverClass = '\vgot\Database\Driver\\'.ucfirst($config['driver']);
+		$driverClass = '\vgot\Database\Driver\\'.ucfirst($config['driver']).'Driver';
 
 		if (!class_exists($driverClass)) {
 			throw new DatabaseException("Unsupport database driver '{$config['driver']}'.");

@@ -11,7 +11,7 @@ namespace vgot\Database\Driver;
 use vgot\Database\DriverInterface;
 use vgot\Exceptions\DatabaseException;
 
-class Mysqli extends DriverInterface {
+class MysqliDriver extends DriverInterface {
 
 	protected $conn;
 
