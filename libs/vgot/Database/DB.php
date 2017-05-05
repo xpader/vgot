@@ -15,6 +15,10 @@ use vgot\Exceptions\DatabaseException;
 class DB
 {
 
+	const FETCH_NUM = 0;
+	const FETCH_ASSOC = 1;
+	const FETCH_BOTH = 2;
+
 	protected static $connections = [];
 
 	/**

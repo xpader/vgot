@@ -12,9 +12,10 @@ namespace vgot\Database;
 use vgot\Exceptions\DatabaseException;
 
 /**
- * Class Connection
+ * Datanase Connection
+ *
  * @package vgot\Database
- * @method close() Close database connection
+ * @method getConnection() Get Driver Connection Base Object
  */
 class Connection
 {
@@ -27,6 +28,8 @@ class Connection
 	protected $di;
 
 	protected $config;
+
+	protected $lastQuery = null;
 
 	protected $queryRecords = [];
 
@@ -67,6 +70,7 @@ class Connection
 	 *
 	 * @param string $sql
 	 * @param array $params
+	 * @return self
 	 * @throws DatabaseException
 	 */
 	public function query($sql, $params=[])
@@ -81,14 +85,65 @@ class Connection
 		if (isset($qst)) {
 			$qet = array_sum(explode(' ', microtime()));
 			$queryTime = round(($qet - $qst), 6);
-			$this->queryRecords[] = array('sql'=>$SQL,'used'=>$queryTime);
+			$this->queryRecords[] = ['sql'=>$sql,'used'=>$queryTime];
 		}
 
 		if (!$query) {
 			throw new DatabaseException("Query error", $this->di, $sql);
 		}
 
-		return $query;
+		$this->lastQuery = $query;
+
+		return $this;
+	}
+
+	/**
+	 * Fetch one row from query result
+	 *
+	 * @param int $fetchType
+	 * @return array|null
+	 * @throws DatabaseException
+	 */
+	public function fetch($fetchType=DB::FETCH_ASSOC)
+	{
+		$result = $this->di->fetch($this->lastQuery, $fetchType);
+
+		if ($result === false) {
+			throw new DatabaseException("Fetch not a query result.");
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Fetch all rows from query result
+	 *
+	 * @param int $fetchType
+	 * @return array
+	 */
+	public function fetchAll($fetchType=DB::FETCH_ASSOC)
+	{
+		return $this->di->fetchAll($this->lastQuery, $fetchType);
+	}
+
+	/**
+	 * Fetch a column value in first result row
+	 *
+	 * @param int|string $col
+	 * @return mixed|bool|null
+	 */
+	public function fetchColumn($col=0)
+	{
+		return $this->di->fetchColumn($this->lastQuery, $col, is_numeric($col) ? DB::FETCH_NUM : DB::FETCH_ASSOC);
+	}
+
+	/**
+	 * Close database connection
+	 */
+	public function close()
+	{
+		$this->lastQuery = null;
+		$this->di && $this->di->close();
 	}
 
 	public function __call($name, $args)
@@ -101,7 +156,7 @@ class Connection
 	}
 
 	public function __destruct() {
-		$this->di->close();
+		$this->close();
 	}
 
 }

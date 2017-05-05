@@ -8,12 +8,11 @@
 
 namespace vgot\Database\Driver;
 
+use vgot\Database\DB;
 use vgot\Database\DriverInterface;
 use vgot\Exceptions\DatabaseException;
 
 class MysqliDriver extends DriverInterface {
-
-	protected $conn;
 
 	public function connect($config)
 	{
@@ -56,6 +55,38 @@ class MysqliDriver extends DriverInterface {
 	public function query($sql)
 	{
 		return @mysqli_query($this->conn, $sql);
+	}
+
+	public function fetch($query, $fetchType=DB::FETCH_ASSOC)
+	{
+		if (!($query instanceof \mysqli_result)) {
+			return false;
+		}
+
+		switch ($fetchType) {
+			case DB::FETCH_ASSOC: $fetchType = MYSQLI_ASSOC; break;
+			case DB::FETCH_NUM: $fetchType = MYSQLI_NUM; break;
+			case DB::FETCH_BOTH: $fetchType = MYSQLI_BOTH; break;
+			default: return false;
+		}
+
+		return $query->fetch_array($fetchType);
+	}
+
+	public function fetchAll($query, $fetchType=DB::FETCH_ASSOC)
+	{
+		if (!($query instanceof \mysqli_result)) {
+			return false;
+		}
+
+		switch ($fetchType) {
+			case DB::FETCH_ASSOC: $fetchType = MYSQLI_ASSOC; break;
+			case DB::FETCH_NUM: $fetchType = MYSQLI_NUM; break;
+			case DB::FETCH_BOTH: $fetchType = MYSQLI_BOTH; break;
+			default: return false;
+		}
+
+		return $query->fetch_all($fetchType);
 	}
 
 }

@@ -37,6 +37,9 @@ class DemoController extends \vgot\Core\Controller
 	{
 		$db = DB::connection();
 
+		$result = $db->query('SELECT * FROM text')->fetchAll();
+
+		print_r($result);
 
 	}
 
