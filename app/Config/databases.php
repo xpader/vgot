@@ -16,7 +16,7 @@ return [
 		'database' => 'test',
 		'table_prefix' => '',
 		'type' => 'mysql',
-		'driver' => 'mysqli',
+		'driver' => 'pdo',
 		'pconnect' => false,
 		'charset' => 'utf8',
 		'collate' => 'utf8_general_ci',

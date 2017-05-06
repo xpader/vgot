@@ -131,10 +131,17 @@ class Connection
 	 *
 	 * @param int|string $col
 	 * @return mixed|bool|null
+	 * @throws
 	 */
 	public function fetchColumn($col=0)
 	{
-		return $this->di->fetchColumn($this->lastQuery, $col, is_numeric($col) ? DB::FETCH_NUM : DB::FETCH_ASSOC);
+		$col = $this->di->fetchColumn($this->lastQuery, $col, is_numeric($col) ? DB::FETCH_NUM : DB::FETCH_ASSOC);
+
+		if ($col === false) {
+			throw new DatabaseException('Fetch column error', "No found column '$col' in data row.");
+		}
+
+		return $col;
 	}
 
 	/**

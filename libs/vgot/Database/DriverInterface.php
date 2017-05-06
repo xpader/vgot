@@ -61,7 +61,7 @@ abstract class DriverInterface {
 		$row = $this->fetch($query, $fetchType);
 
 		if ($row) {
-			return isset($row[$col]) ? $row[$col] : null;
+			return isset($row[$col]) ? $row[$col] : false;
 		}
 
 		return $row;

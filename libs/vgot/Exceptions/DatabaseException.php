@@ -12,21 +12,33 @@ use vgot\Database\DriverInterface;
 
 class DatabaseException extends \Exception {
 
+	protected $code;
 	protected $sql;
 	protected $error;
 
+	/**
+	 * Constructor.
+	 *
+	 * @param string $message
+	 * @param DriverInterface|string $di
+	 * @param string $sql
+	 */
 	public function __construct($message, DriverInterface $di=null, $sql='')
 	{
 		if ($di) {
-			$code = $di->getErrorCode();
-			if ($error = $di->getErrorMessage()) {
-				$this->error = $error;
+			if ($di instanceof DriverInterface) {
+				$code = $di->getErrorCode();
+				if ($error = $di->getErrorMessage()) {
+					$this->error = $error;
+				}
+			} else {
+				$this->error = $di;
 			}
-		} else {
-			$code = 0;
 		}
 
-		parent::__construct($message, $code, null);
+		parent::__construct($message);
+
+		$this->code = isset($code) ? $code : 0;
 
 		$sql && $this->sql = $sql;
 	}

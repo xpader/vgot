@@ -10,7 +10,6 @@ namespace vgot\Database\Driver;
 
 use vgot\Database\DB;
 use vgot\Database\DriverInterface;
-use vgot\Exceptions\DatabaseException;
 
 class MysqliDriver extends DriverInterface {
 
@@ -39,7 +38,7 @@ class MysqliDriver extends DriverInterface {
 
 	public function ping()
 	{
-		return ($this->conn instanceof mysqli) && mysqli_ping($this->conn);
+		return ($this->conn instanceof \mysqli) && mysqli_ping($this->conn);
 	}
 
 	public function getErrorCode()
