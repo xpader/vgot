@@ -70,7 +70,7 @@ class PdoDriver extends DriverInterface {
 
 		//Connect
 		try {
-			$class= new \ReflectionClass('PDO');
+			$class = new \ReflectionClass('PDO');
 			$this->conn = $class->newInstanceArgs($args);
 		} catch (\PDOException $e) {
 			$this->ex = $e;
@@ -122,7 +122,6 @@ class PdoDriver extends DriverInterface {
 		}
 
 		$fetchType = $this->getFetchType($fetchType);
-
 		return $query->fetch($fetchType);
 	}
 
@@ -133,7 +132,6 @@ class PdoDriver extends DriverInterface {
 		}
 
 		$fetchType = $this->getFetchType($fetchType);
-
 		return $query->fetchAll($fetchType);
 	}
 

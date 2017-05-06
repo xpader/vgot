@@ -62,13 +62,7 @@ class MysqliDriver extends DriverInterface {
 			return false;
 		}
 
-		switch ($fetchType) {
-			case DB::FETCH_ASSOC: $fetchType = MYSQLI_ASSOC; break;
-			case DB::FETCH_NUM: $fetchType = MYSQLI_NUM; break;
-			case DB::FETCH_BOTH: $fetchType = MYSQLI_BOTH; break;
-			default: return false;
-		}
-
+		$fetchType = $this->getFetchType($fetchType);
 		return $query->fetch_array($fetchType);
 	}
 
@@ -78,14 +72,18 @@ class MysqliDriver extends DriverInterface {
 			return false;
 		}
 
-		switch ($fetchType) {
-			case DB::FETCH_ASSOC: $fetchType = MYSQLI_ASSOC; break;
-			case DB::FETCH_NUM: $fetchType = MYSQLI_NUM; break;
-			case DB::FETCH_BOTH: $fetchType = MYSQLI_BOTH; break;
-			default: return false;
-		}
-
+		$fetchType = $this->getFetchType($fetchType);
 		return $query->fetch_all($fetchType);
+	}
+
+	protected function getFetchType($fetchType)
+	{
+		switch ($fetchType) {
+			case DB::FETCH_ASSOC: return MYSQLI_ASSOC; break;
+			case DB::FETCH_NUM: return MYSQLI_NUM; break;
+			case DB::FETCH_BOTH: return MYSQLI_BOTH; break;
+			default: return MYSQLI_ASSOC;
+		}
 	}
 
 }

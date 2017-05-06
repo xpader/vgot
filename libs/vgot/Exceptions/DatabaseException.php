@@ -12,7 +12,7 @@ use vgot\Database\DriverInterface;
 
 class DatabaseException extends \Exception {
 
-	protected $code;
+	//protected $code;
 	protected $sql;
 	protected $error;
 

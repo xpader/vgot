@@ -43,4 +43,9 @@ class DemoController extends \vgot\Core\Controller
 
 	}
 
+	public function sqlite()
+	{
+		$db = DB::connection('sqlite');
+	}
+
 }

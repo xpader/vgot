@@ -21,5 +21,11 @@ return [
 		'charset' => 'utf8',
 		'collate' => 'utf8_general_ci',
 		'debug' => false
+	],
+	'sqlite3' => [
+		'filename' => 'test.db',
+		'driver' => 'sqlite3',
+		'flags' => null, //see SQLite::__consturct() $flags
+		'encryption_key' => null
 	]
 ];
