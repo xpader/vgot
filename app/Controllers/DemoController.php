@@ -19,12 +19,12 @@ class DemoController extends \vgot\Core\Controller
 
 	public function dev()
 	{
-		echo 'This is dev';
+		$this->aaa();
 	}
 
 	public function gzip()
 	{
-		echo '<div>'.str_repeat('Hello World ', 500).'</div>';
+		echo '<div>'.str_repeat('Hello World ', 600).'</div>';
 		echo '<div>'.str_repeat('Hello World ', 500).'</div>';
 	}
 

@@ -1,0 +1,15 @@
+{
+  "name": "xpader/vgot",
+  "description": "vgot php framework",
+  "minimum-stability": "stable",
+  "license": "Apache",
+  "authors": [
+    {
+      "name": "pader",
+      "email": "ypnow@163.com"
+    }
+  ],
+  "require": {
+    "filp/whoops": "2.*"
+  }
+}

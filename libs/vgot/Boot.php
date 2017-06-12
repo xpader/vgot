@@ -81,7 +81,7 @@ class Boot
 		$app = new Application(self::$archPath);
 
 		//set_error_handler('\vgot\Core\Application::errorHandler');
-		set_exception_handler('\vgot\Core\Application::exceptionHandler');
+//		set_exception_handler('\vgot\Core\Application::exceptionHandler');
 		//register_shutdown_function('\vgot\shutdownHandler');
 
 		//Startup application
