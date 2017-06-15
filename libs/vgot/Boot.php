@@ -80,9 +80,15 @@ class Boot
 
 		$app = new Application(self::$archPath);
 
-		//set_error_handler('\vgot\Core\Application::errorHandler');
-//		set_exception_handler('\vgot\Core\Application::exceptionHandler');
-		//register_shutdown_function('\vgot\shutdownHandler');
+		//Call custom error handler
+		$setErrorHandler = $app->config->get('set_error_handler');
+		if (is_callable($setErrorHandler)) {
+			$setErrorHandler();
+		} else {
+			//set_error_handler('\vgot\Core\ErrorHandler::errorHandler');
+			set_exception_handler('\vgot\Core\ErrorHandler::exceptionHandler');
+			//register_shutdown_function('\vgot\shutdownHandler');
+		}
 
 		//Startup application
 		$app->execute();
