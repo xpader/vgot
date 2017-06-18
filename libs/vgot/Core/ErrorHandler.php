@@ -7,6 +7,7 @@
  */
 namespace vgot\Core;
 
+use vgot\Exceptions\DatabaseException;
 use vgot\Exceptions\HttpNotFoundException;
 
 class ErrorHandler
@@ -60,11 +61,20 @@ class ErrorHandler
 			header('HTTP/1.1 404 Not Found');
 			header('Status: 404 Not Found');
 			$app->view->render('errors/404');
+		} elseif ($exception instanceof DatabaseException) {
+			header('HTTP/1.1 500 Internal Server Error');
+			header('Status: 500 Internal Server Error');
+			$app->view->render('errors/db', compact('exception'));
 		} else {
 			header('HTTP/1.1 500 Internal Server Error');
 			header('Status: 500 Internal Server Error');
 			$app->view->render('errors/500', compact('exception'));
 		}
+	}
+
+	public static function shutdownHandler()
+	{
+		var_dump(func_get_args());
 	}
 
 }
