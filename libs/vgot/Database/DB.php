@@ -8,7 +8,6 @@
 
 namespace vgot\Database;
 
-
 use vgot\Core\Application;
 use vgot\Exceptions\DatabaseException;
 
@@ -24,25 +23,26 @@ class DB
 	/**
 	 * Get Database Connection
 	 *
-	 * @param string $mark
-	 * @return Connection
+	 * @param string $index
+	 * @param bool $queryBuilder Use query builder mode
+	 * @return Connection|QueryBuilder
 	 * @throws DatabaseException
 	 */
-	public static function connection($mark='default')
+	public static function connection($index='default', $queryBuilder=false)
 	{
-		if (!isset(self::$connections[$mark])) {
-			$config = Application::getInstance()->config->get($mark, 'databases');
+		if (!isset(self::$connections[$index])) {
+			$config = Application::getInstance()->config->get($index, 'databases');
 
 			if ($config === null) {
-				throw new DatabaseException("No found database config '$mark'.");
+				throw new DatabaseException("No found database config '$index'.");
 			}
 
-			$conn = new Connection($config);
+			$conn = $queryBuilder ? new QueryBuilder($config) :  new Connection($config);
 
-			self::$connections[$mark] = $conn;
+			self::$connections[$index] = $conn;
 		}
 
-		return self::$connections[$mark];
+		return self::$connections[$index];
 	}
 
 }

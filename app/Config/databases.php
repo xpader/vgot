@@ -16,11 +16,11 @@ return [
 		'database' => 'test',
 		'table_prefix' => '',
 		'type' => 'mysql',
-		'driver' => 'pdo',
+		'driver' => 'mysqli',
 		'pconnect' => false,
 		'charset' => 'utf8',
 		'collate' => 'utf8_general_ci',
-		'debug' => false
+		'debug' => true
 	],
 	'sqlite3' => [
 		'filename' => 'test.db',

@@ -9,16 +9,16 @@
 namespace vgot\Database;
 
 
+use vgot\Exceptions\DatabaseException;
+
 class QueryBuilder extends Connection {
 
-	protected $_select;
-	protected $_orderBy;
-	protected $_join;
-	protected $_from;
-	protected $_alias;
+	protected $builder = [];
+	protected $table;
 
 	public function select($fields)
 	{
+		$this->builder['select'] = $fields;
 		return $this;
 	}
 
@@ -39,18 +39,38 @@ class QueryBuilder extends Connection {
 
 	public function from($table, $alias=null)
 	{
-		$this->_from = $table;
+		$this->table = $table;
+		return $alias ? $this->alias($alias) : $this;
+	}
 
-		if ($alias) {
-			$this->alias($alias);
+	public function alias($alias)
+	{
+		$this->builder['alias'] = $alias;
+		return $this;
+	}
+
+	/**
+	 * Limit
+	 *
+	 * @param int $num Limit or offset when $limit is null
+	 * @param int $limit
+	 * @return self
+	 */
+	public function limit($num, $limit=null)
+	{
+		if ($limit !== null) {
+			$this->builder['limit'] = $limit;
+			$this->builder['offset'] = $num;
+		} else {
+			$this->builder['limit'] = $num;
 		}
 
 		return $this;
 	}
 
-	public function alias($alias)
+	public function offset($num)
 	{
-		$this->_alias = $alias;
+		$this->builder['offset'] = $num;
 		return $this;
 	}
 
@@ -64,6 +84,85 @@ class QueryBuilder extends Connection {
 	{}
 
 	/**
+	 * Build sql from query builder
+	 *
+	 * @return string
+	 * @throws
+	 */
+	public function buildSql()
+	{
+		if (!$this->table) {
+			throw new DatabaseException('Query build error, No table were selected!', $this->di);
+		}
+
+		//SELECT
+		if (isset($this->builder['select'])) {
+			$sql = 'SELECT '.$this->quoteFields($this->builder['select']);
+		} else {
+			$sql = 'SELECT *';
+		}
+
+		//FROM
+		$sql .= " FROM `{$this->table}`";
+
+		//AS
+		if (isset($this->builder['alias'])) {
+			$sql .= " `{$this->builder['alias']}`";
+		}
+
+		//LIMIT, OFFSET
+		if (isset($this->builder['limit'])) {
+			$sql .= ' LIMIT ';
+
+			if (isset($this->builder['offset'])) {
+				$sql .= "{$this->builder['offset']},";
+				unset($this->builder['offset']);
+			}
+
+			$sql .= $this->builder['limit'];
+		}
+
+		if (isset($this->builder['offset'])) {
+			$sql .= " OFFSET {$this->builder['offset']}";
+		}
+
+		$this->builder = [];
+
+		return $sql;
+	}
+
+	/**
+	 * Fetch one row from query result
+	 *
+	 * @param int $fetchType
+	 * @return array|null
+	 */
+	public function fetch($fetchType=DB::FETCH_ASSOC)
+	{
+		$this->prepareQuery();
+		return parent::fetch($fetchType);
+	}
+
+	/**
+	 * Fetch all rows from query result
+	 *
+	 * @param int $fetchType
+	 * @return array
+	 */
+	public function fetchAll($fetchType=DB::FETCH_ASSOC)
+	{
+		$this->prepareQuery();
+		return parent::fetchAll($fetchType);
+	}
+
+	protected function prepareQuery()
+	{
+		if ($this->builder || $this->table) {
+			$this->query($this->buildSql());
+		}
+	}
+
+	/**
 	 * Convert Keys To SQL Format
 	 *
 	 * @param string|array $keys
@@ -72,11 +171,11 @@ class QueryBuilder extends Connection {
 	protected function quoteFields($keys)
 	{
 		if (is_array($keys)) {
-			$Qkeys = array();
+			$qk = array();
 			foreach($keys as $key) {
-				$Qkeys[] = $this->quoteFields($key);
+				$qk[] = $this->quoteFields($key);
 			}
-			return join(',',$Qkeys);
+			return join(',',$qk);
 		} elseif (strpos($keys,',') !== false) {
 			$keys = explode(',',$keys);
 			return $this->quoteFields($keys);
@@ -85,7 +184,7 @@ class QueryBuilder extends Connection {
 			$str = $pre = $func = $as = '';
 
 			//as alias
-			if (stripos($keys,' AS ') !== FALSE) {
+			if (stripos($keys,' AS ') !== false) {
 				list($col, $as) = explode(' AS ', str_replace(' as ', ' AS ', $keys));
 				$as = trim($as, ' `');
 			}
@@ -97,7 +196,7 @@ class QueryBuilder extends Connection {
 			}
 
 			//has prefix
-			if (strpos($col,'.') !== FALSE) {
+			if (strpos($col,'.') !== false) {
 				list($pre, $col) = explode('.', $col);
 				$pre = trim($pre, ' `');
 			}

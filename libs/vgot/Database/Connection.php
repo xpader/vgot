@@ -85,7 +85,7 @@ class Connection
 		if (isset($qst)) {
 			$qet = array_sum(explode(' ', microtime()));
 			$queryTime = round(($qet - $qst), 6);
-			$this->queryRecords[] = ['sql'=>$sql,'used'=>$queryTime];
+			$this->queryRecords[] = ['sql'=>$sql,'time_used'=>$queryTime];
 		}
 
 		if (!$query) {
@@ -112,6 +112,8 @@ class Connection
 			throw new DatabaseException("Fetch not a query result.");
 		}
 
+		$this->lastQuery = null;
+
 		return $result;
 	}
 
@@ -120,10 +122,19 @@ class Connection
 	 *
 	 * @param int $fetchType
 	 * @return array
+	 * @throws DatabaseException
 	 */
 	public function fetchAll($fetchType=DB::FETCH_ASSOC)
 	{
-		return $this->di->fetchAll($this->lastQuery, $fetchType);
+		$result = $this->di->fetchAll($this->lastQuery, $fetchType);
+
+		if ($result === false) {
+			throw new DatabaseException("Fetch not a query result.");
+		}
+
+		$this->lastQuery = null;
+
+		return $result;
 	}
 
 	/**
@@ -141,7 +152,14 @@ class Connection
 			throw new DatabaseException('Fetch column error', "No found column '$col' in data row.");
 		}
 
+		$this->lastQuery = null;
+
 		return $col;
+	}
+
+	public function getQueryRecords()
+	{
+		return $this->queryRecords;
 	}
 
 	/**
