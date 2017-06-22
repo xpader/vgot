@@ -262,7 +262,7 @@ class QueryBuilder extends Connection {
 			return join(', ', $qk);
 
 		} elseif (!$single && strpos($keys,',') !== false) {
-			//split with , except in () and ''
+			//split with comma[,] except in brackets[()] and single quots['']
 			$xkeys = preg_split('/,(?![^(\']*[\)\'])/', $keys);
 
 			if (!isset($xkeys[1]) || $xkeys[0] == $keys) {
@@ -303,10 +303,16 @@ class QueryBuilder extends Connection {
 				$pre = trim($pre, ' `');
 			}
 
-			//make return string
+			//add prefix
 			$pre && $str = "`$pre`.";
+
+			//add quote
 			($col != '*' && $quote && !ctype_digit($col)) && $col = "`$col`";
+
+			//add function
 			$func ? $str = "$func($str$col)" : $str .= $col;
+
+			//add alias
 			$as && $str .= " AS `$as`";
 
 			return $str;
