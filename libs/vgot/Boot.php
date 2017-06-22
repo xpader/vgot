@@ -85,7 +85,7 @@ class Boot
 		if (is_callable($setErrorHandler)) {
 			$setErrorHandler();
 		} else {
-			set_error_handler('\vgot\Core\ErrorHandler::errorHandler');
+			//set_error_handler('\vgot\Core\ErrorHandler::errorHandler');
 			set_exception_handler('\vgot\Core\ErrorHandler::exceptionHandler');
 			//register_shutdown_function('\vgot\Core\ErrorHandler::shutdownHandler');
 		}

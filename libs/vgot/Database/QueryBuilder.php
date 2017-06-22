@@ -9,20 +9,31 @@
 namespace vgot\Database;
 
 
-use vgot\Exceptions\DatabaseException;
-
 class QueryBuilder extends Connection {
 
 	protected $builder = [];
 	protected $table;
 
-	public function select($fields)
+	public function select($fields, $quote=true)
 	{
 		$this->builder['select'] = $fields;
+		$this->builder['select_quote'] = $quote;
 		return $this;
 	}
 
-	public function orderBy()
+	public function from($table, $alias=null)
+	{
+		$this->table = $this->quoteKeys($table);
+		return $alias ? $this->alias($alias) : $this;
+	}
+
+	public function alias($alias)
+	{
+		$this->builder['alias'] = $alias;
+		return $this;
+	}
+
+	public function join()
 	{
 		return $this;
 	}
@@ -32,20 +43,28 @@ class QueryBuilder extends Connection {
 		return $this;
 	}
 
-	public function join()
+	public function having()
 	{
 		return $this;
 	}
 
-	public function from($table, $alias=null)
+	/**
+	 * @param string|array $groupBy
+	 * @return $this
+	 */
+	public function groupBy($groupBy)
 	{
-		$this->table = $table;
-		return $alias ? $this->alias($alias) : $this;
+		$this->builder['group_by'] = $groupBy;
+		return $this;
 	}
 
-	public function alias($alias)
+	/**
+	 * @param array|string $order
+	 * @return $this
+	 */
+	public function orderBy($order)
 	{
-		$this->builder['alias'] = $alias;
+		$this->builder['order_by'] = $order;
 		return $this;
 	}
 
@@ -91,23 +110,68 @@ class QueryBuilder extends Connection {
 	 */
 	public function buildSql()
 	{
-		if (!$this->table) {
-			throw new DatabaseException('Query build error, No table were selected!', $this->di);
-		}
+		//if (!$this->table) {
+		//	throw new DatabaseException('Query build error, No table were selected!', $this->di);
+		//}
 
 		//SELECT
 		if (isset($this->builder['select'])) {
-			$sql = 'SELECT '.$this->quoteFields($this->builder['select']);
+			$sql = 'SELECT '.
+				($this->builder['select_quote']
+					? $this->quoteKeys($this->builder['select'])
+					: $this->builder['select']);
 		} else {
 			$sql = 'SELECT *';
 		}
 
 		//FROM
-		$sql .= " FROM `{$this->table}`";
+		if ($this->table) {
+			$sql .= " FROM {$this->table}";
 
-		//AS
-		if (isset($this->builder['alias'])) {
-			$sql .= " `{$this->builder['alias']}`";
+			//AS
+			if (isset($this->builder['alias'])) {
+				$sql .= " `{$this->builder['alias']}`";
+			}
+		}
+
+		//GROUP BY
+		if (isset($this->builder['group_by'])) {
+			$sql .= ' GROUP BY '.$this->quoteKeys($this->builder['group_by']);
+		}
+
+		//ORDER BY
+		if (isset($this->builder['order_by'])) {
+			$orderBy = $this->builder['order_by'];
+
+			//convert order by string to array
+			if (!is_array($orderBy)) {
+				$orderBy = preg_replace('/\s+/', ' ', $orderBy);
+				$arr = array_map('trim', explode(',', $orderBy));
+				$orderBy = [];
+
+				foreach ($arr as $ostr) {
+					list($field, $sort) = explode(' ', $ostr);
+					$orderBy[$field] = $sort;
+				}
+			}
+
+			$order = '';
+
+			foreach ($orderBy as $field => $sort) {
+				$order != '' && $order .= ', ';
+
+				if ($sort === SORT_ASC) {
+					$sort = 'ASC';
+				} elseif ($sort === SORT_DESC) {
+					$sort = 'DESC';
+				} else {
+					$sort = strtoupper($sort);
+				}
+
+				$order .= $this->quoteKeys($field).' '.$sort;
+			}
+
+			$sql .= ' ORDER BY '.$order;
 		}
 
 		//LIMIT, OFFSET
@@ -127,34 +191,53 @@ class QueryBuilder extends Connection {
 		}
 
 		$this->builder = [];
+		$this->table = null;
 
 		return $sql;
 	}
 
-	/**
-	 * Fetch one row from query result
-	 *
-	 * @param int $fetchType
-	 * @return array|null
-	 */
+	//Fetch one row from query result
 	public function fetch($fetchType=DB::FETCH_ASSOC)
 	{
 		$this->prepareQuery();
 		return parent::fetch($fetchType);
 	}
 
-	/**
-	 * Fetch all rows from query result
-	 *
-	 * @param int $fetchType
-	 * @return array
-	 */
+	//Fetch all rows from query result
 	public function fetchAll($fetchType=DB::FETCH_ASSOC)
 	{
 		$this->prepareQuery();
 		return parent::fetchAll($fetchType);
 	}
 
+	//Fetch a column value in first result row
+	public function fetchColumn($col=0)
+	{
+		$this->prepareQuery();
+		return parent::fetchColumn($col);
+	}
+
+	//public function distinct($field)
+	//{
+	//	$this->builder['select'] = "distinct($field)";
+	//	return $this;
+	//}
+
+	/**
+	 * Count rows
+	 *
+	 * @param string $field
+	 * @return int|null
+	 */
+	public function count($field='*')
+	{
+		$this->builder['select'] = "count($field)";
+		return $this->fetchColumn();
+	}
+
+	/**
+	 * Build and do query for fetch result
+	 */
 	protected function prepareQuery()
 	{
 		if ($this->builder || $this->table) {
@@ -166,22 +249,32 @@ class QueryBuilder extends Connection {
 	 * Convert Keys To SQL Format
 	 *
 	 * @param string|array $keys
+	 * @param bool $single Is a single field in top level
 	 * @return string
 	 */
-	protected function quoteFields($keys)
+	protected function quoteKeys($keys, $single=false)
 	{
 		if (is_array($keys)) {
 			$qk = array();
 			foreach($keys as $key) {
-				$qk[] = $this->quoteFields($key);
+				$qk[] = $this->quoteKeys($key);
 			}
-			return join(',',$qk);
-		} elseif (strpos($keys,',') !== false) {
-			$keys = explode(',',$keys);
-			return $this->quoteFields($keys);
+			return join(', ', $qk);
+
+		} elseif (!$single && strpos($keys,',') !== false) {
+			//split with , except in () and ''
+			$xkeys = preg_split('/,(?![^(\']*[\)\'])/', $keys);
+
+			if (!isset($xkeys[1]) || $xkeys[0] == $keys) {
+				return $this->quoteKeys($keys, true);
+			} else {
+				return $this->quoteKeys($xkeys);
+			}
+
 		} else {
 			$keys = $col = trim($keys);
 			$str = $pre = $func = $as = '';
+			$quote = true;
 
 			//as alias
 			if (stripos($keys,' AS ') !== false) {
@@ -190,20 +283,29 @@ class QueryBuilder extends Connection {
 			}
 
 			//used function
-			if (preg_match('/^(\w+)\s*\(\s*(.+)\s*\)/i', $col, $m)) {
-				$func = $m[1];
-				$col = $m[2];
+			if (preg_match('/^(\w+)\s*\(\s*(.+)?\s*\)$/i', $col, $m)) {
+				$func = strtoupper($m[1]);
+
+				if (!isset($m[2])) {
+					$col = '';
+					$quote = false;
+				} elseif (strpbrk($m[2], ',()') !== false) { //nested function
+					$col = $this->quoteKeys($m[2]);
+					$quote = false;
+				} else {
+					$col = $m[2];
+				}
 			}
 
 			//has prefix
-			if (strpos($col,'.') !== false) {
+			if (strpos($col, '.') !== false) {
 				list($pre, $col) = explode('.', $col);
 				$pre = trim($pre, ' `');
 			}
 
 			//make return string
 			$pre && $str = "`$pre`.";
-			($col != '*' && !ctype_digit($col)) && $col = "`$col`";
+			($col != '*' && $quote && !ctype_digit($col)) && $col = "`$col`";
 			$func ? $str = "$func($str$col)" : $str .= $col;
 			$as && $str .= " AS `$as`";
 

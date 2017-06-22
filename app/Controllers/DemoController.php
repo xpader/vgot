@@ -37,14 +37,23 @@ class DemoController extends \vgot\Core\Controller
 	{
 		$db = DB::connection('default', true);
 
-		$result = $db->query('SELECT * FROM text')->fetchAll();
+		$result = $db->from('text')->orderBy(['id'=>SORT_ASC])->groupBy('id')->fetchAll();
 		print_r($result);
 
 		$db->select('t.id as uniqid,text')->from('text')->alias('t');
 		$result = $db->offset(1)->limit(1)->fetchAll();
 		print_r($result);
 
-		$result = $db->select('text')->from('text')->alias('t')->limit(2,1)->fetchAll();
+		//$result = $db->select('text')->from('text')->alias('t')->limit(2,1)->fetchAll();
+		//print_r($result);
+
+		$result= $db->select('min(id) as min_id, sum(t.id) as sum, max(id) as max_id')->from('text')->alias('t')->fetch();
+		print_r($result);
+
+		$result= $db->select('uuid()')->fetchColumn();
+		print_r($result);
+
+		$result= $db->select('*')->from('zentao.zt_grouppriv')->groupBy('company,group')->fetchAll();
 		print_r($result);
 
 		print_r($db->getQueryRecords());

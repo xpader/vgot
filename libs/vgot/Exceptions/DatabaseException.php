@@ -23,7 +23,7 @@ class DatabaseException extends \Exception {
 	 * @param DriverInterface|string $di
 	 * @param string $sql
 	 */
-	public function __construct($message, DriverInterface $di=null, $sql='')
+	public function __construct($message, $di=null, $sql='')
 	{
 		if ($di) {
 			if ($di instanceof DriverInterface) {
