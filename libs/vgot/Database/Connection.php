@@ -16,6 +16,7 @@ use vgot\Exceptions\DatabaseException;
  *
  * @package vgot\Database
  * @method getConnection() Get Driver Connection Base Object
+ * @method quote($string) Quote a string for use in query
  */
 class Connection
 {
@@ -146,15 +147,40 @@ class Connection
 	 */
 	public function fetchColumn($col=0)
 	{
-		$col = $this->di->fetchColumn($this->lastQuery, $col, is_numeric($col) ? DB::FETCH_NUM : DB::FETCH_ASSOC);
+		$val = $this->di->fetchColumn($this->lastQuery, $col, is_numeric($col) ? DB::FETCH_NUM : DB::FETCH_ASSOC);
 
-		if ($col === false) {
+		if ($val === false) {
 			throw new DatabaseException('Fetch column error', "No found column '$col' in data row.");
 		}
 
 		$this->lastQuery = null;
 
-		return $col;
+		return $val;
+	}
+
+	/**
+	 * Is table name has prefix
+	 *
+	 * @param string $table
+	 * @return bool
+	 */
+	public function hasPrefix($table)
+	{
+		return (
+			empty($this->config['table_prefix']) ||
+			substr($table, 0, strlen($this->config['table_prefix'])) == $this->config['table_prefix']
+		);
+	}
+
+	/**
+	 * Get table name with prefix
+	 *
+	 * @param string $table
+	 * @return string
+	 */
+	public function tableName($table)
+	{
+		return $this->config['table_prefix'].$table;
 	}
 
 	public function getQueryRecords()

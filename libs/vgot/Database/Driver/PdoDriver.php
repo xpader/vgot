@@ -135,6 +135,11 @@ class PdoDriver extends DriverInterface {
 		return $query->fetchAll($fetchType);
 	}
 
+	public function quote($string)
+	{
+		return $this->conn->quote($string);
+	}
+
 	protected function getFetchType($fetchType)
 	{
 		switch ($fetchType) {

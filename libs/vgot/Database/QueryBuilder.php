@@ -9,6 +9,8 @@
 namespace vgot\Database;
 
 
+use vgot\Exceptions\DatabaseException;
+
 class QueryBuilder extends Connection {
 
 	protected $builder = [];
@@ -23,7 +25,7 @@ class QueryBuilder extends Connection {
 
 	public function from($table, $alias=null)
 	{
-		$this->table = $this->quoteKeys($table);
+		$this->table = $this->quoteTable($table);
 		return $alias ? $this->alias($alias) : $this;
 	}
 
@@ -93,8 +95,17 @@ class QueryBuilder extends Connection {
 		return $this;
 	}
 
-	public function insert()
-	{}
+	public function insert($table, $data, $params=null, $replace=false)
+	{
+		$table = $this->quoteTable($table);
+		$keys = $this->quoteKeys(array_keys($data));
+		$values = $this->quoteValues($data);
+
+		$sql = ($replace ? 'REPLACE' : 'INSERT')." INTO $table($keys) VALUES($values)";
+
+		//use exec instead query for better
+		return $this->query($sql);
+	}
 
 	public function delete()
 	{}
@@ -260,8 +271,9 @@ class QueryBuilder extends Connection {
 				$qk[] = $this->quoteKeys($key);
 			}
 			return join(', ', $qk);
+		}
 
-		} elseif (!$single && strpos($keys,',') !== false) {
+		if (!$single && strpos($keys,',') !== false) {
 			//split with comma[,] except in brackets[()] and single quots['']
 			$xkeys = preg_split('/,(?![^(\']*[\)\'])/', $keys);
 
@@ -270,53 +282,143 @@ class QueryBuilder extends Connection {
 			} else {
 				return $this->quoteKeys($xkeys);
 			}
+		}
 
-		} else {
-			$keys = $col = trim($keys);
-			$str = $pre = $func = $as = '';
-			$quote = true;
+		$keys = $col = $this->trim($keys);
+		$str = $pre = $func = $alias = $as = '';
+		$quote = true;
 
-			//as alias
-			if (stripos($keys,' AS ') !== false) {
-				list($col, $as) = explode(' AS ', str_replace(' as ', ' AS ', $keys));
-				$as = trim($as, ' `');
+		//as
+		if (($asa = $this->splitAs($keys)) !== false) {
+			list($col, $as, $alias) = $asa;
+		}
+
+		//used function, two [?] for 1 is not match after space, 2 is not only space in brackets
+		if (preg_match('/^(\w+)\s*\(\s*(.+?)?\s*\)$/i', $col, $m)) {
+			$func = strtoupper($m[1]);
+
+			if (!isset($m[2])) {
+				$col = '';
+				$quote = false;
+			} elseif (strpbrk($m[2], ',()') !== false) { //nested function
+				$col = $this->quoteKeys($m[2]);
+				$quote = false;
+			} else {
+				$col = $m[2];
 			}
+		}
 
-			//used function
-			if (preg_match('/^(\w+)\s*\(\s*(.+)?\s*\)$/i', $col, $m)) {
-				$func = strtoupper($m[1]);
+		//has prefix
+		if (strpos($col, '.') !== false) {
+			list($pre, $col) = explode('.', $col);
+			$pre = trim($pre, ' `');
+		}
 
-				if (!isset($m[2])) {
-					$col = '';
-					$quote = false;
-				} elseif (strpbrk($m[2], ',()') !== false) { //nested function
-					$col = $this->quoteKeys($m[2]);
-					$quote = false;
-				} else {
-					$col = $m[2];
-				}
+		//add prefix
+		$pre && $str = "`$pre`.";
+
+		//add quote
+		($col != '*' && $quote && !ctype_digit($col)) && $col = "`$col`";
+
+		//add function
+		$func ? $str = "$func($str$col)" : $str .= $col;
+
+		//add alias
+		$as && $str .= "$as`$alias`";
+
+		return $str;
+	}
+
+	protected function quoteTable($table)
+	{
+		if (is_array($table)) {
+			$str = '';
+			foreach ($table as $t) {
+				$str != '' && $str .= ',';
+				$str .= $this->quoteTable($t);
 			}
-
-			//has prefix
-			if (strpos($col, '.') !== false) {
-				list($pre, $col) = explode('.', $col);
-				$pre = trim($pre, ' `');
-			}
-
-			//add prefix
-			$pre && $str = "`$pre`.";
-
-			//add quote
-			($col != '*' && $quote && !ctype_digit($col)) && $col = "`$col`";
-
-			//add function
-			$func ? $str = "$func($str$col)" : $str .= $col;
-
-			//add alias
-			$as && $str .= " AS `$as`";
-
 			return $str;
 		}
+
+		if (strpos($table, ',') !== false) {
+			return $this->quoteTable(explode(',', $table));
+		}
+
+		$table = $this->trim($table);
+		$db = $as = $alias = '';
+
+		//as alias
+		if (($asa = $this->splitAs($table)) !== false) {
+			list($table, $as, $alias) = $asa;
+		}
+
+		//remove space char, because may have " db .  table" situation
+		$table = str_replace(' ', '', $table);
+
+		if (strpos($table, '.') !== false) {
+			list($db, $table) = explode('.', $table);
+		}
+
+		if (!$this->hasPrefix($table)) {
+			$table = $this->tableName($table);
+		}
+
+		$str = '';
+
+		$db && $str = "`$db`.";
+		$str .= "`$table`";
+		$as && $str .= "$as`$alias`";
+
+		echo $str;
+
+		return $str;
+	}
+
+	/**
+	 * @param string|array $values
+	 * @return string Keys
+	 */
+	public function quoteValues($values)
+	{
+		if (is_array($values)) {
+			$vals = array();
+			foreach($values as $val) {
+				$vals[] = $this->quoteValues($val);
+			}
+			return join(',', $vals);
+		} else {
+			return $this->quote($values);
+		}
+	}
+
+	/**
+	 * Split the table/field alias string
+	 *
+	 * @param string $str
+	 * @return array|bool
+	 */
+	protected function splitAs($str)
+	{
+		//as alias
+		if (stripos($str,' AS ') !== false) {
+			list($col, $alias) = explode(' AS ', str_replace(' as ', ' AS ', $str));
+			$alias = trim($alias, ' ');
+			$as = ' AS ';
+		} elseif (preg_match('/[^\s]\s[\w\-]+$/i', $str)) {
+			//sure it's alias name after space
+			//like "field alias", not "some )" or any other string after space not a alias
+			list($col, $alias) = preg_split('/\s(?=[\w\-]+$)/i', $str);
+			$as = ' ';
+		} else {
+			return false;
+		}
+
+		return [$col, $as, $alias];
+	}
+
+	protected function trim($str)
+	{
+		return preg_replace('/\s+/', ' ', trim($str, ' `'));
 	}
 
 }

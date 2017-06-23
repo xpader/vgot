@@ -37,24 +37,26 @@ class DemoController extends \vgot\Core\Controller
 	{
 		$db = DB::connection('default', true);
 
-		$result = $db->from('text')->orderBy(['id'=>SORT_ASC])->groupBy('id')->fetchAll();
-		print_r($result);
-
-		$db->select('t.id as uniqid,text')->from('text')->alias('t');
-		$result = $db->offset(1)->limit(1)->fetchAll();
-		print_r($result);
-
-		//$result = $db->select('text')->from('text')->alias('t')->limit(2,1)->fetchAll();
+		//$result = $db->from('text')->orderBy(['id'=>SORT_ASC])->groupBy('id')->fetchAll();
 		//print_r($result);
 
-		$result= $db->select('min(id) as min_id, sum(t.id) as sum, max(id) as max_id')->from('text')->alias('t')->fetch();
+		//$db->select('t.id as uniqid,text')->from('text')->alias('t');
+		//$result = $db->offset(1)->limit(1)->fetchAll();
+		//print_r($result);
+
+		$result = $db->from('text')->alias('t')->orderBy(['id'=>SORT_DESC])->limit(2,1)->fetchAll();
 		print_r($result);
 
-		$result= $db->select('uuid()')->fetchColumn();
+		$result= $db->select('  min ( id ) as min_id , sum(t.id ) as sum, max( id) max_id')->from('text')->alias('t')->fetch();
 		print_r($result);
 
-		$result= $db->select('*')->from('zentao.zt_grouppriv')->groupBy('company,group')->fetchAll();
+		$result= $db->select('     uuid (     )     uuid  ')->fetchColumn();
+		print_r($result."\n");
+
+		$result= $db->select('*')->from('  zentao  .  zt_grouppriv   as    a   ')->groupBy('company,group')->fetchAll();
 		print_r($result);
+
+		$db->insert('text', ['text'=>'Hello World']);
 
 		print_r($db->getQueryRecords());
 

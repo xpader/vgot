@@ -41,6 +41,8 @@ abstract class DriverInterface {
 	 */
 	abstract public function fetch($query, $fetchType);
 
+	abstract public function quote($string);
+
 	abstract public function getErrorCode();
 
 	abstract public function getErrorMessage();

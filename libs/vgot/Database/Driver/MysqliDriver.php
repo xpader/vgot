@@ -76,6 +76,11 @@ class MysqliDriver extends DriverInterface {
 		return $query->fetch_all($fetchType);
 	}
 
+	public function quote($str)
+	{
+		return '\''.mysqli_escape_string($this->conn, $str).'\'';
+	}
+
 	protected function getFetchType($fetchType)
 	{
 		switch ($fetchType) {
