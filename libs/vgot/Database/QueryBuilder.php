@@ -48,8 +48,9 @@ class QueryBuilder extends Connection {
 		return $this;
 	}
 
-	public function having()
+	public function having($having)
 	{
+		$this->builder['having'] = $having;
 		return $this;
 	}
 
@@ -150,14 +151,20 @@ class QueryBuilder extends Connection {
 
 		//WHERE
 		if (isset($this->builder['where'])) {
-			$where = $this->parseWhere($this->builder['where'], null,
-				(isset($this->builder['where_params']) ? $this->builder['where_params'] : null));
+			$where = $this->parseWhere($this->builder['where']);
 			$sql .= " WHERE $where";
+
+			//if (isset($this->builder['where_params']) {
+			//}
 		}
 
 		//GROUP BY
 		if (isset($this->builder['group_by'])) {
 			$sql .= ' GROUP BY '.$this->quoteKeys($this->builder['group_by']);
+		}
+
+		if (isset($this->builder['having'])) {
+			$sql .=' HAVING '.$this->parseWhere($this->builder['having']);
 		}
 
 		//ORDER BY
@@ -252,7 +259,7 @@ class QueryBuilder extends Connection {
 	 */
 	public function count($field='*')
 	{
-		$this->builder['select'] = "count($field)";
+		$this->select("COUNT($field)", false);
 		return $this->fetchColumn();
 	}
 
@@ -410,7 +417,7 @@ class QueryBuilder extends Connection {
 	 * @param mixed $value
 	 * @return string
 	 */
-	public function parseWhere($where=null, $value=null)
+	public function parseWhere($where, $value=null)
 	{
 		if (is_array($where)) {
 			$sqlWhere = array();
