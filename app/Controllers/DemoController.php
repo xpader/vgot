@@ -59,7 +59,18 @@ class DemoController extends \vgot\Core\Controller
 		$db->insert('text', ['text'=>'Hello World']);
 
 		print_r($db->getQueryRecords());
+	}
 
+	public function dbWhere()
+	{
+		$db = DB::connection('default', true);
+
+		$result= $db->from('text')->where(['OR', ['id'=>3, 'text'=>4], ['id'=>1, 'text'=>'Hello'], 'id like'=>'12'])->fetch();
+		//$result= $db->from('text')->where(['id'=>3])->fetch();
+		print_r($result);
+
+
+		print_r($db->getQueryRecords());
 	}
 
 	public function sqlite()

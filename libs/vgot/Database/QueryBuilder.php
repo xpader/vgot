@@ -8,9 +8,6 @@
 
 namespace vgot\Database;
 
-
-use vgot\Exceptions\DatabaseException;
-
 class QueryBuilder extends Connection {
 
 	protected $builder = [];
@@ -40,8 +37,14 @@ class QueryBuilder extends Connection {
 		return $this;
 	}
 
-	public function where()
+	public function where($cond, $params=null)
 	{
+		$this->builder['where'] = $cond;
+
+		if ($params !== null) {
+			$this->builder['where_params'] = $params;
+		}
+
 		return $this;
 	}
 
@@ -143,6 +146,13 @@ class QueryBuilder extends Connection {
 			if (isset($this->builder['alias'])) {
 				$sql .= " `{$this->builder['alias']}`";
 			}
+		}
+
+		//WHERE
+		if (isset($this->builder['where'])) {
+			$where = $this->parseWhere($this->builder['where'], null,
+				(isset($this->builder['where_params']) ? $this->builder['where_params'] : null));
+			$sql .= " WHERE $where";
 		}
 
 		//GROUP BY
@@ -375,6 +385,8 @@ class QueryBuilder extends Connection {
 	}
 
 	/**
+	 * Quote values to safe sql string
+	 *
 	 * @param string|array $values
 	 * @return string Keys
 	 */
@@ -388,6 +400,88 @@ class QueryBuilder extends Connection {
 			return join(',', $vals);
 		} else {
 			return $this->quote($values);
+		}
+	}
+
+	/**
+	 * Parse where condition to sql format
+	 *
+	 * @param array|string $where
+	 * @param mixed $value
+	 * @return string
+	 */
+	public function parseWhere($where=null, $value=null)
+	{
+		if (is_array($where)) {
+			$sqlWhere = array();
+
+			//first value is AND or OR to set poly method
+			if (key($where) === 0 && ($t = strtoupper($where[0])) && ($t == 'AND' || $t == 'OR')) {
+				$join = $t;
+				unset($where[0]);
+			} else {
+				$join = 'AND';
+			}
+
+			foreach ($where as $key => $val) {
+				$poly = false;
+
+				if (is_int($key)) {
+					if (is_array($val)) {
+						$sql = $this->parseWhere($val);
+						!$poly && count($val) > 1 && $poly = true;
+					} else {
+						$sql = $val;
+					}
+				} else {
+					$sql = $this->parseWhere($key, $val);
+				}
+
+				$sqlWhere[] = $poly ? '('.$sql.')' : $sql;
+			}
+
+			return join(" $join ", $sqlWhere);
+		}
+
+		if ($value === null) {
+			return $where;
+		}
+
+		$where = $this->trim($where);
+
+		if ($pos = strpos($where, ' ')) {
+			$key = $this->quoteKeys(substr($where, 0, $pos));
+			$cond = strtoupper(substr($where, $pos+1));
+
+			//support ! mean !=, !IN mean NOT IN, and !EXISTS mean NOT EXISTS
+			if ($cond == '!') {
+				$cond = '!=';
+			} elseif (substr($cond, 0, 1) == '!') {
+				$cond = substr_replace($cond, 'NOT ', 0, 1);
+			}
+
+			switch ($cond) {
+				case 'IN':
+				case 'NOT IN':
+					return $key.' '.$cond.'('.$this->quoteValues($value).')';
+					break;
+
+				case 'LIKE':
+				case 'NOT LIKE':
+					return $key.' '.$cond.' '.$this->quoteValues($value);
+					break;
+
+				case 'EXISTS':
+				case 'NOT EXISTS':
+					return $key.' '.$cond.'('.$value.')';
+					break;
+
+				default:
+					return $key.$cond.$this->quoteValues($value);
+			}
+
+		} else {
+			return $this->quoteKeys($where).'='.$this->quoteValues($value);
 		}
 	}
 
