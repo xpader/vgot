@@ -75,7 +75,16 @@ class DemoController extends \vgot\Core\Controller
 
 	public function sqlite()
 	{
-		$db = DB::connection('sqlite');
+		$db = DB::connection('sqlite', 1);
+		//$db->exec('create table test(id INTEGER PRIMARY KEY NOT NULL, `text` text NOT NULL, date int NOT NULL)');
+
+		$result = $db->from('test')->where(['id >'=>5, 'id !'=>'aaa\'asd'])->fetchAll();
+		print_r($result);
+
+		//$db->insert('test', ['text'=>'Hello World', 'date'=>time()]);
+		//echo $db->insertId();
+
+		print_r($db->getQueryRecords());
 	}
 
 }

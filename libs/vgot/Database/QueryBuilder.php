@@ -469,8 +469,6 @@ class QueryBuilder extends Connection {
 		$str .= "`$table`";
 		$as && $str .= "$as`$alias`";
 
-		echo $str;
-
 		return $str;
 	}
 

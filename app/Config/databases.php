@@ -22,10 +22,23 @@ return [
 		'collate' => 'utf8_general_ci',
 		'debug' => true
 	],
-	'sqlite3' => [
-		'filename' => 'test.db',
+	'sqlite' => [
+		'filename' => BASE_PATH.'/public/test.db',
 		'driver' => 'sqlite3',
+		/**
+		 * Optional flags used to determine how to open the SQLite database
+		 * default is SQLITE3_OPEN_READWRITE | SQLITE3_OPEN_CREATE
+		 *
+		 * @var int
+		 */
 		'flags' => null, //see SQLite::__consturct() $flags
-		'encryption_key' => null
+		/**
+		 * An optional encryption key used when encrypting and decrypting an SQLite database.
+		 * If the SQLite encryption module is not installed, this parameter will have no effect.
+		 *
+		 * @var string|null
+		 */
+		'encryption_key' => null,
+		'debug' => true
 	]
 ];

@@ -9,6 +9,7 @@
 namespace vgot\Database\Driver;
 
 use SQLite3;
+use vgot\Database\DB;
 use vgot\Database\DriverInterface;
 
 /**
@@ -19,6 +20,9 @@ use vgot\Database\DriverInterface;
  */
 class Sqlite3Driver extends DriverInterface {
 
+	/**
+	 * @var \Exception
+	 */
 	protected $ex;
 
 	public function connect($config)
@@ -50,8 +54,8 @@ class Sqlite3Driver extends DriverInterface {
 	{
 		if ($this->ex) {
 			return $this->ex->getCode();
-		} elseif ($this->conn && $this->conn->errorCode() != '00000') {
-			return $this->conn->errorCode();
+		} elseif ($this->conn && $this->conn->lastErrorCode() != '00000') {
+			return $this->conn->lastErrorCode();
 		}
 
 		return 0;
@@ -61,12 +65,67 @@ class Sqlite3Driver extends DriverInterface {
 	{
 		if ($this->ex) {
 			return $this->ex->getMessage();
-		} elseif ($this->conn && $this->conn->errorCode() != '00000') {
-			$info = $this->conn->errorInfo();
-			return $info[2];
+		} elseif ($this->conn && $this->conn->lastErrorCode() != '00000') {
+			return $this->conn->lastErrorMsg();
 		}
 
 		return '';
+	}
+
+	public function query($sql)
+	{
+		return $this->conn->query($sql);
+	}
+
+	public function exec($sql)
+	{
+		return @$this->conn->exec($sql) ? $this->conn->changes() : false;
+	}
+
+	public function fetch($query, $fetchType=DB::FETCH_ASSOC)
+	{
+		if (!($query instanceof \SQLite3Result)) {
+			return false;
+		}
+
+		$fetchType = $this->getFetchType($fetchType);
+		return $query->fetchArray($fetchType);
+	}
+
+	public function fetchAll($query, $fetchType=DB::FETCH_ASSOC)
+	{
+		if (!($query instanceof \SQLite3Result)) {
+			return false;
+		}
+
+		$fetchType = $this->getFetchType($fetchType);
+		$result = [];
+
+		while ($row = $query->fetchArray($fetchType)) {
+			$result[] = $row;
+		}
+
+		return $result;
+	}
+
+	public function insertId()
+	{
+		return $this->conn->lastInsertRowID();
+	}
+
+	public function quote($str)
+	{
+		return '\''.SQLite3::escapeString($str).'\'';
+	}
+
+	protected function getFetchType($fetchType)
+	{
+		switch ($fetchType) {
+			case DB::FETCH_ASSOC: return SQLITE3_ASSOC; break;
+			case DB::FETCH_NUM: return SQLITE3_NUM; break;
+			case DB::FETCH_BOTH: return SQLITE3_BOTH; break;
+			default: return SQLITE3_ASSOC;
+		}
 	}
 
 }
