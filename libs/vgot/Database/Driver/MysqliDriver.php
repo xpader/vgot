@@ -53,7 +53,12 @@ class MysqliDriver extends DriverInterface {
 
 	public function query($sql)
 	{
-		return @mysqli_query($this->conn, $sql);
+		return mysqli_query($this->conn, $sql);
+	}
+
+	public function exec($sql)
+	{
+		return mysqli_real_query($this->conn, $sql) ? mysqli_affected_rows($this->conn) : false;
 	}
 
 	public function fetch($query, $fetchType=DB::FETCH_ASSOC)
@@ -63,7 +68,7 @@ class MysqliDriver extends DriverInterface {
 		}
 
 		$fetchType = $this->getFetchType($fetchType);
-		return $query->fetch_array($fetchType);
+		return mysqli_fetch_array($query, $fetchType);
 	}
 
 	public function fetchAll($query, $fetchType=DB::FETCH_ASSOC)
@@ -73,7 +78,12 @@ class MysqliDriver extends DriverInterface {
 		}
 
 		$fetchType = $this->getFetchType($fetchType);
-		return $query->fetch_all($fetchType);
+		return mysqli_fetch_all($query, $fetchType);
+	}
+
+	public function insertId()
+	{
+		return mysqli_insert_id($this->conn);
 	}
 
 	public function quote($str)

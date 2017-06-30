@@ -65,8 +65,8 @@ class DemoController extends \vgot\Core\Controller
 	{
 		$db = DB::connection('default', true);
 
-		$result= $db->from('text')->where(['OR', ['id'=>3, 'text'=>4], ['id'=>1, 'text'=>'Hello'], 'id like'=>'12'])->fetch();
-		//$result= $db->from('text')->where(['id'=>3])->fetch();
+		$result= $db->where(['id'=>23])->update('text', ['text'=>file_get_contents('http://php.net/manual/zh/pdo.lastinsertid.php')]);
+
 		print_r($result);
 
 

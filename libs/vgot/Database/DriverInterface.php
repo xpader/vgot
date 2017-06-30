@@ -30,7 +30,21 @@ abstract class DriverInterface {
 	 */
 	abstract public function close();
 
+	/**
+	 * Do a query and return query result
+	 *
+	 * @param string $sql
+	 * @return mixed
+	 */
 	abstract public function query($sql);
+
+	/**
+	 * Do a query and return affected rows number
+	 *
+	 * @param string$sql
+	 * @return int|false
+	 */
+	abstract public function exec($sql);
 
 	/**
 	 * Fetch one row
@@ -40,6 +54,13 @@ abstract class DriverInterface {
 	 * @return array|bool
 	 */
 	abstract public function fetch($query, $fetchType);
+
+	/**
+	 * Get last insert id
+	 *
+	 * @return int
+	 */
+	abstract public function insertId();
 
 	abstract public function quote($string);
 

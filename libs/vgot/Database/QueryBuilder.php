@@ -99,7 +99,15 @@ class QueryBuilder extends Connection {
 		return $this;
 	}
 
-	public function insert($table, $data, $params=null, $replace=false)
+	/**
+	 * Insert data
+	 *
+	 * @param string $table
+	 * @param array $data
+	 * @param bool $replace Use REPLACE INTO
+	 * @return int
+	 */
+	public function insert($table, array $data, $replace=false)
 	{
 		$table = $this->quoteTable($table);
 		$keys = $this->quoteKeys(array_keys($data));
@@ -108,22 +116,57 @@ class QueryBuilder extends Connection {
 		$sql = ($replace ? 'REPLACE' : 'INSERT')." INTO $table($keys) VALUES($values)";
 
 		//use exec instead query for better
-		return $this->query($sql);
+		return $this->exec($sql);
 	}
 
-	public function delete()
-	{}
+	/**
+	 * Delete data
+	 *
+	 * @param string $table
+	 * @return int Affected rows number
+	 */
+	public function delete($table)
+	{
+		$this->from($table);
+		$sql = 'DELETE'.$this->buildFrom().$this->buildWhere().$this->buildOrderBy()
+			.$this->buildLimit().$this->buildOffset();
+		return $this->exec($sql);
+	}
 
-	public function update()
-	{}
+	/**
+	 * Update data
+	 *
+	 * @param string $table
+	 * @param array $data
+	 * @return int Affected rows number
+	 */
+	public function update($table, array $data)
+	{
+		$sql = 'UPDATE '.$this->quoteTable($table).' SET ';
+		$sets = array();
+
+		foreach($data as $key => $val) {
+			if(substr($key, 0, 1) == '^') {
+				$key = $this->quoteKeys(substr($key,1));
+				$sets[] = "$key=$val";
+			} else {
+				$sets[] = $this->quoteKeys($key).'='.$this->quote($val);
+			}
+		}
+
+		$sql .= join(',', $sets).$this->buildWhere().$this->buildOrderBy() .$this->buildLimit()
+			.$this->buildOffset();
+
+		return $this->exec($sql);
+	}
 
 	/**
 	 * Build sql from query builder
 	 *
+	 * @param bool $clean Clean conditions after build
 	 * @return string
-	 * @throws
 	 */
-	public function buildSql()
+	public function buildSelect($clean=true)
 	{
 		//if (!$this->table) {
 		//	throw new DatabaseException('Query build error, No table were selected!', $this->di);
@@ -140,86 +183,13 @@ class QueryBuilder extends Connection {
 		}
 
 		//FROM
-		if ($this->table) {
-			$sql .= " FROM {$this->table}";
+		$sql .= $this->buildFrom().$this->buildWhere().$this->buildGroupBy().$this->buildHaving()
+			.$this->buildOrderBy().$this->buildLimit().$this->buildOffset();
 
-			//AS
-			if (isset($this->builder['alias'])) {
-				$sql .= " `{$this->builder['alias']}`";
-			}
+		if ($clean) {
+			$this->builder = [];
+			$this->table = null;
 		}
-
-		//WHERE
-		if (isset($this->builder['where'])) {
-			$where = $this->parseWhere($this->builder['where']);
-			$sql .= " WHERE $where";
-
-			//if (isset($this->builder['where_params']) {
-			//}
-		}
-
-		//GROUP BY
-		if (isset($this->builder['group_by'])) {
-			$sql .= ' GROUP BY '.$this->quoteKeys($this->builder['group_by']);
-		}
-
-		if (isset($this->builder['having'])) {
-			$sql .=' HAVING '.$this->parseWhere($this->builder['having']);
-		}
-
-		//ORDER BY
-		if (isset($this->builder['order_by'])) {
-			$orderBy = $this->builder['order_by'];
-
-			//convert order by string to array
-			if (!is_array($orderBy)) {
-				$orderBy = preg_replace('/\s+/', ' ', $orderBy);
-				$arr = array_map('trim', explode(',', $orderBy));
-				$orderBy = [];
-
-				foreach ($arr as $ostr) {
-					list($field, $sort) = explode(' ', $ostr);
-					$orderBy[$field] = $sort;
-				}
-			}
-
-			$order = '';
-
-			foreach ($orderBy as $field => $sort) {
-				$order != '' && $order .= ', ';
-
-				if ($sort === SORT_ASC) {
-					$sort = 'ASC';
-				} elseif ($sort === SORT_DESC) {
-					$sort = 'DESC';
-				} else {
-					$sort = strtoupper($sort);
-				}
-
-				$order .= $this->quoteKeys($field).' '.$sort;
-			}
-
-			$sql .= ' ORDER BY '.$order;
-		}
-
-		//LIMIT, OFFSET
-		if (isset($this->builder['limit'])) {
-			$sql .= ' LIMIT ';
-
-			if (isset($this->builder['offset'])) {
-				$sql .= "{$this->builder['offset']},";
-				unset($this->builder['offset']);
-			}
-
-			$sql .= $this->builder['limit'];
-		}
-
-		if (isset($this->builder['offset'])) {
-			$sql .= " OFFSET {$this->builder['offset']}";
-		}
-
-		$this->builder = [];
-		$this->table = null;
 
 		return $sql;
 	}
@@ -269,8 +239,121 @@ class QueryBuilder extends Connection {
 	protected function prepareQuery()
 	{
 		if ($this->builder || $this->table) {
-			$this->query($this->buildSql());
+			$this->query($this->buildSelect());
 		}
+	}
+
+	/**
+	 * Build from query
+	 *
+	 * Have alias if setted.
+	 *
+	 * @see quoteTable()
+	 * @return string
+	 */
+	protected function buildFrom()
+	{
+		if ($this->table) {
+			$sql = " FROM {$this->table}";
+
+			//AS
+			if (isset($this->builder['alias'])) {
+				$sql .= " `{$this->builder['alias']}`";
+			}
+
+			return $sql;
+		}
+
+		return '';
+	}
+
+	protected function buildWhere()
+	{
+		if (isset($this->builder['where'])) {
+			$where = $this->parseWhere($this->builder['where']);
+			$sql = " WHERE $where";
+
+			//if (isset($this->builder['where_params']) {
+			//}
+
+			return $sql;
+		}
+
+		return '';
+	}
+
+	protected function buildGroupBy()
+	{
+		return isset($this->builder['group_by']) ? ' GROUP BY '.$this->quoteKeys($this->builder['group_by']) : '';
+	}
+
+	protected function buildHaving()
+	{
+		return isset($this->builder['having']) ? ' HAVING '.$this->parseWhere($this->builder['having']) : '';
+	}
+
+	protected function buildOrderBy()
+	{
+		$sql = '';
+
+		if (isset($this->builder['order_by'])) {
+			$orderBy = $this->builder['order_by'];
+
+			//convert order by string to array
+			if (!is_array($orderBy)) {
+				$orderBy = preg_replace('/\s+/', ' ', $orderBy);
+				$arr = array_map('trim', explode(',', $orderBy));
+				$orderBy = [];
+
+				foreach ($arr as $ostr) {
+					list($field, $sort) = explode(' ', $ostr);
+					$orderBy[$field] = $sort;
+				}
+			}
+
+			$order = '';
+
+			foreach ($orderBy as $field => $sort) {
+				$order != '' && $order .= ', ';
+
+				if ($sort === SORT_ASC) {
+					$sort = 'ASC';
+				} elseif ($sort === SORT_DESC) {
+					$sort = 'DESC';
+				} else {
+					$sort = strtoupper($sort);
+				}
+
+				$order .= $this->quoteKeys($field).' '.$sort;
+			}
+
+			$sql .= ' ORDER BY '.$order;
+		}
+
+		return $sql;
+	}
+
+	protected function buildLimit()
+	{
+		if (isset($this->builder['limit'])) {
+			$sql = ' LIMIT ';
+
+			if (isset($this->builder['offset'])) {
+				$sql .= "{$this->builder['offset']},";
+				unset($this->builder['offset']);
+			}
+
+			$sql .= $this->builder['limit'];
+
+			return $sql;
+		}
+
+		return '';
+	}
+
+	protected function buildOffset()
+	{
+		return isset($this->builder['offset']) ? " OFFSET {$this->builder['offset']}" : '';
 	}
 
 	/**

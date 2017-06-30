@@ -16,7 +16,8 @@ use vgot\Exceptions\DatabaseException;
  *
  * @package vgot\Database
  * @method getConnection() Get Driver Connection Base Object
- * @method quote($string) Quote a string for use in query
+ * @method int insertId() Get last insert id
+ * @method string quote(string $string) Quote a string for use in query
  */
 class Connection
 {
@@ -67,14 +68,14 @@ class Connection
 	{}
 
 	/**
-	 * Make A Query
+	 * Do a query and get result
 	 *
 	 * @param string $sql
 	 * @param array $params
 	 * @return self
 	 * @throws DatabaseException
 	 */
-	public function query($sql, $params=[])
+	public function query($sql, $params=null)
 	{
 		//debug
 		if (!empty($this->config['debug'])) {
@@ -89,13 +90,45 @@ class Connection
 			$this->queryRecords[] = ['sql'=>$sql,'time_used'=>$queryTime];
 		}
 
-		if (!$query) {
+		if ($query === false) {
 			throw new DatabaseException("Query error", $this->di, $sql);
 		}
 
 		$this->lastQuery = $query;
 
 		return $this;
+	}
+
+	/**
+	 * Do a query and get affected rows number
+	 *
+	 * @param string $sql
+	 * @param array $params
+	 * @return int
+	 * @throws DatabaseException
+	 */
+	public function exec($sql, $params=null)
+	{
+		//debug
+		if (!empty($this->config['debug'])) {
+			$qst = array_sum(explode(' ', microtime()));
+		}
+
+		$affected = $this->di->exec($sql);
+
+		if (isset($qst)) {
+			$qet = array_sum(explode(' ', microtime()));
+			$queryTime = round(($qet - $qst), 6);
+			$this->queryRecords[] = ['sql'=>$sql,'time_used'=>$queryTime];
+		}
+
+		if ($affected === false) {
+			throw new DatabaseException("Query error", $this->di, $sql);
+		}
+
+		$this->lastQuery = null;
+
+		return $affected;
 	}
 
 	/**

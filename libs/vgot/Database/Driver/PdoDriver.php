@@ -115,6 +115,11 @@ class PdoDriver extends DriverInterface {
 		return $this->conn->query($sql);
 	}
 
+	public function exec($sql)
+	{
+		return $this->conn->exec($sql);
+	}
+
 	public function fetch($query, $fetchType=DB::FETCH_ASSOC)
 	{
 		if (!($query instanceof PDOStatement)) {
@@ -133,6 +138,11 @@ class PdoDriver extends DriverInterface {
 
 		$fetchType = $this->getFetchType($fetchType);
 		return $query->fetchAll($fetchType);
+	}
+
+	public function insertId()
+	{
+		return $this->conn->lastInsertId();
 	}
 
 	public function quote($string)
