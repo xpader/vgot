@@ -18,11 +18,11 @@ class Output
 	{
 		$config = Application::getInstance()->config;
 
-		if ($config->get('output_gzip')) {
-			if ($config->get('output_gzip_force_soft') || !$this->enableHardGzip()) {
-				ob_start('\\' . self::class . '::gzipEncode');
-				$this->mode = 'soft';
-			}
+		if ($config->get('output_gzip') &&
+			($config->get('output_gzip_force_soft') || !$this->enableHardGzip())
+		) {
+			ob_start('\\' . self::class . '::gzipEncode');
+			$this->mode = 'soft';
 		} else {
 			ob_start();
 		}
@@ -32,10 +32,8 @@ class Output
 
 	public function __destruct()
 	{
-		if (($level = ob_get_level()) > 0) {
-			for ($i=$level; $i>0; $i--) {
-				ob_end_flush();
-			}
+		if (ob_get_level()) {
+			ob_end_flush();
 		}
 	}
 

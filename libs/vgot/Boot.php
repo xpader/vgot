@@ -28,7 +28,7 @@ class Boot
 
 	public static function registerNamespaces($namespaces)
 	{
-		self::$namespaces = $namespaces;
+		self::$namespaces += $namespaces;
 	}
 
 	/**

@@ -7,6 +7,7 @@
  */
 namespace app\Controllers;
 
+use vgot\Core\Application;
 use vgot\Database\DB;
 
 class DemoController extends \vgot\Core\Controller
@@ -48,7 +49,7 @@ class DemoController extends \vgot\Core\Controller
 
 	public function db()
 	{
-		$db = DB::connection();
+		$db = Application::getInstance()->db;
 
 		//$result = $db->from('text')->orderBy(['id'=>SORT_ASC])->groupBy('id')->fetchAll();
 		//print_r($result);
