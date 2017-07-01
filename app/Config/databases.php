@@ -7,7 +7,8 @@
  */
 
 return [
-	'default' => [
+	'default_connection' => 'main',
+	'main' => [
 		'dsn' => '',
 		'host' => '127.0.0.1',
 		'port' => 3306,
@@ -20,6 +21,7 @@ return [
 		'pconnect' => false,
 		'charset' => 'utf8',
 		'collate' => 'utf8_general_ci',
+		'query_builder' => true,
 		'debug' => true
 	],
 	'sqlite' => [
@@ -39,6 +41,7 @@ return [
 		 * @var string|null
 		 */
 		'encryption_key' => null,
+		'query_builder' => true,
 		'debug' => true
 	]
 ];

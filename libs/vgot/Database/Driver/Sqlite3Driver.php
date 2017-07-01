@@ -74,7 +74,7 @@ class Sqlite3Driver extends DriverInterface {
 
 	public function query($sql)
 	{
-		return $this->conn->query($sql);
+		return @$this->conn->query($sql);
 	}
 
 	public function exec($sql)

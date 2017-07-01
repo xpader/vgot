@@ -35,7 +35,7 @@ class DemoController extends \vgot\Core\Controller
 
 	public function db()
 	{
-		$db = DB::connection('default', true);
+		$db = DB::connection();
 
 		//$result = $db->from('text')->orderBy(['id'=>SORT_ASC])->groupBy('id')->fetchAll();
 		//print_r($result);
@@ -71,7 +71,7 @@ class DemoController extends \vgot\Core\Controller
 
 	public function dbWhere()
 	{
-		$db = DB::connection('default', true);
+		$db = DB::connection();
 
 		//$result= $db->where(['id'=>23])->update('text', ['text'=>file_get_contents('http://php.net/manual/zh/pdo.lastinsertid.php')]);
 		$result = $db->where(['id'=>48])->delete('text');
