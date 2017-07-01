@@ -7,6 +7,7 @@
  */
 namespace vgot\Core;
 
+use vgot\Database\DB;
 use vgot\Exceptions\ApplicationException;
 use vgot\Exceptions\HttpNotFoundException;
 
@@ -18,6 +19,7 @@ use vgot\Exceptions\HttpNotFoundException;
  * @property Output $output
  * @property View $view
  * @property Controller $controller
+ * @property \vgot\Database\Connection|\vgot\Database\QueryBuilder $db
  */
 class Application
 {
@@ -45,6 +47,18 @@ class Application
 
 	public function __get($name)
 	{
+		if ($this->$name !== null) {
+			return $this->$name;
+		}
+
+		switch ($name) {
+			case 'db':
+				if ($this->db === null) {
+					$this->db = DB::connection();
+				}
+				break;
+		}
+
 		return $this->$name;
 	}
 

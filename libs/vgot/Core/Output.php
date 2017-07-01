@@ -12,24 +12,30 @@ namespace vgot\Core;
 class Output
 {
 
-	protected $gzipType = null;
+	protected $mode = null;
 
 	public function __construct()
 	{
 		$config = Application::getInstance()->config;
 
-		if ($config->get('output_gzip') && ($config->get('output_gzip_force_soft') || !$this->enableHardGzip())) {
-			ob_start('\\'.self::class.'::gzipEncode');
-			$this->gzipType = 'soft';
+		if ($config->get('output_gzip')) {
+			if ($config->get('output_gzip_force_soft') || !$this->enableHardGzip()) {
+				ob_start('\\' . self::class . '::gzipEncode');
+				$this->mode = 'soft';
+			}
 		} else {
 			ob_start();
 		}
+
+		ob_implicit_flush(false);
 	}
 
 	public function __destruct()
 	{
-		if (ob_get_level() > 0) {
-			ob_end_flush();
+		if (($level = ob_get_level()) > 0) {
+			for ($i=$level; $i>0; $i--) {
+				ob_end_flush();
+			}
 		}
 	}
 
@@ -39,16 +45,26 @@ class Output
 		flush();
 	}
 
-	public function getGzipType()
+	public function getBuffer()
 	{
-		return $this->gzipType;
+		return ob_get_contents();
+	}
+
+	public function getMode()
+	{
+		return $this->mode;
 	}
 
 	protected function enableHardGzip()
 	{
-		if (!headers_sent() && ini_set('zlib.output_compression', 'On') !== false) {
-			ini_set('zlib.output_compression_level', Application::getInstance()->config->get('output_gzip_level'));
-			$this->gzipType = 'hard';
+		if (!headers_sent()) {
+			if (ini_set('zlib.output_compression', 4096) !== false) {
+				ini_set('zlib.output_compression_level', Application::getInstance()->config->get('output_gzip_level'));
+			} elseif (!ob_start('ob_gzhandler')) {
+				return false;
+			}
+
+			$this->mode = 'hard';
 			return true;
 		}
 

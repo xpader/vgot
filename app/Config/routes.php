@@ -10,6 +10,10 @@ return [
 	'default_action' => 'index',
 	'404_override' => false,
 	'404_view' => 'errors/404',
+	/**
+	 * Set case symbol in url
+	 * @var string|false
+	 */
 	'case_symbol' => '-',
 	'ucfirst' => true,
 	'route_maps' => [

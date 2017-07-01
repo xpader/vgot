@@ -19,13 +19,26 @@ class DemoController extends \vgot\Core\Controller
 
 	public function dev()
 	{
-		$this->aaa();
+		$app = \vgot\app();
+		$a = $app->db->from('text')->limit(10)->fetchAll();
+
+		print_r($app->db->getQueryRecords());
+
+		print_r($a);
 	}
 
 	public function gzip()
 	{
+		echo \vgot\app()->output->getMode();
+
+		var_dump(ini_get('zlib.output_compression'));
+
 		echo '<div>'.str_repeat('Hello World ', 600).'</div>';
+
+		//ob_start();
 		echo '<div>'.str_repeat('Hello World ', 500).'</div>';
+		//$contents = ob_get_contents();
+		//ob_end_clean();
 	}
 
 	public function view()
