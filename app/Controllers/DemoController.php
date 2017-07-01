@@ -47,16 +47,24 @@ class DemoController extends \vgot\Core\Controller
 		$result = $db->from('text')->alias('t')->orderBy(['id'=>SORT_DESC])->limit(2,1)->fetchAll();
 		print_r($result);
 
-		$result= $db->select('  min ( id ) as min_id , sum(t.id ) as sum, max( id) max_id')->from('text')->alias('t')->fetch();
+		$result = $db->select('  min ( id ) as min_id , sum(t.id ) as sum, max( id) max_id')->from('text')->alias('t')->fetch();
 		print_r($result);
 
-		$result= $db->select('     uuid (     )     uuid  ')->fetchColumn();
+		$result = $db->select('     uuid (     )     uuid  ')->fetchColumn();
 		print_r($result."\n");
 
-		$result= $db->select('*')->from('  zentao  .  zt_grouppriv   as    a   ')->groupBy('company,group')->fetchAll();
+		$result = $db->select('*')->from('  zentao  .  zt_grouppriv   as    a   ')->groupBy('company,group')->fetchAll();
 		print_r($result);
 
-		$db->insert('text', ['text'=>'Hello World']);
+		$db->where(['id'=>60])->update('text', ['ss'=>uniqid()]);
+
+		$result = $db->leftJoin('t2 w', 'id')->from('text t')->where(['t.id'=>60])->fetch();
+		print_r($result);
+
+		$result = $db->from('text')->where(['id between'=>[50, 55]])->union()->from('text')->where(['id'=>58])->fetchAll();
+		print_r($result);
+
+		//$db->insert('text', ['text'=>'Hello World']);
 
 		print_r($db->getQueryRecords());
 	}
@@ -65,7 +73,8 @@ class DemoController extends \vgot\Core\Controller
 	{
 		$db = DB::connection('default', true);
 
-		$result= $db->where(['id'=>23])->update('text', ['text'=>file_get_contents('http://php.net/manual/zh/pdo.lastinsertid.php')]);
+		//$result= $db->where(['id'=>23])->update('text', ['text'=>file_get_contents('http://php.net/manual/zh/pdo.lastinsertid.php')]);
+		$result = $db->where(['id'=>48])->delete('text');
 
 		print_r($result);
 

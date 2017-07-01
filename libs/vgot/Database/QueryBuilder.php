@@ -32,8 +32,22 @@ class QueryBuilder extends Connection {
 		return $this;
 	}
 
-	public function join()
+	public function join($table, $compopr, $type='')
 	{
+		$type = strtoupper($type);
+		$this->builder['join'][] = compact('type', 'table', 'compopr');
+		return $this;
+	}
+
+	public function leftJoin($table, $compopr) { return $this->join($table, $compopr, 'left'); }
+	public function rightJoin($table, $compopr) { return $this->join($table, $compopr, 'right'); }
+	public function innerJoin($table, $compopr) { return $this->join($table, $compopr, 'inner'); }
+	public function outerJoin($table, $compopr) { return $this->join($table, $compopr, 'outer'); }
+
+	public function union($all=false)
+	{
+		$sql = $this->buildSelect();
+		$this->builder['union'] = $sql.($all ? ' UNION ALL ' : ' UNION ');
 		return $this;
 	}
 
@@ -130,6 +144,7 @@ class QueryBuilder extends Connection {
 		$this->from($table);
 		$sql = 'DELETE'.$this->buildFrom().$this->buildWhere().$this->buildOrderBy()
 			.$this->buildLimit().$this->buildOffset();
+		$this->builder = [];
 		return $this->exec($sql);
 	}
 
@@ -143,7 +158,7 @@ class QueryBuilder extends Connection {
 	public function update($table, array $data)
 	{
 		$sql = 'UPDATE '.$this->quoteTable($table).' SET ';
-		$sets = array();
+		$sets = [];
 
 		foreach($data as $key => $val) {
 			if(substr($key, 0, 1) == '^') {
@@ -156,6 +171,8 @@ class QueryBuilder extends Connection {
 
 		$sql .= join(',', $sets).$this->buildWhere().$this->buildOrderBy() .$this->buildLimit()
 			.$this->buildOffset();
+
+		$this->builder = [];
 
 		return $this->exec($sql);
 	}
@@ -172,18 +189,25 @@ class QueryBuilder extends Connection {
 		//	throw new DatabaseException('Query build error, No table were selected!', $this->di);
 		//}
 
+		$sql = '';
+
+		//UNION
+		if (isset($this->builder['union'])) {
+			$sql .= $this->builder['union'];
+		}
+
 		//SELECT
 		if (isset($this->builder['select'])) {
-			$sql = 'SELECT '.
+			$sql .= 'SELECT '.
 				($this->builder['select_quote']
 					? $this->quoteKeys($this->builder['select'])
 					: $this->builder['select']);
 		} else {
-			$sql = 'SELECT *';
+			$sql .= 'SELECT *';
 		}
 
 		//FROM
-		$sql .= $this->buildFrom().$this->buildWhere().$this->buildGroupBy().$this->buildHaving()
+		$sql .= $this->buildFrom().$this->buildJoin().$this->buildWhere().$this->buildGroupBy().$this->buildHaving()
 			.$this->buildOrderBy().$this->buildLimit().$this->buildOffset();
 
 		if ($clean) {
@@ -267,6 +291,44 @@ class QueryBuilder extends Connection {
 		return '';
 	}
 
+	protected function buildJoin()
+	{
+		if (isset($this->builder['join'])) {
+			$sql = '';
+			foreach ($this->builder['join'] as $join) {
+				$sql .= ' '.$join['type'].' JOIN '.$this->quoteTable($join['table']);
+				//only a field mean USING()
+				if (is_string($join['compopr']) && preg_match('/^[^\(\)\=]+$/', $join['compopr'])) {
+					$sql .= ' USING('.$this->quoteKeys($join['compopr'], true).')';
+				} else {
+					$sql .= ' ON '.$this->parseJoinCompopr($join['compopr']);
+				}
+			}
+			return $sql;
+		}
+
+		return '';
+	}
+
+	protected function parseJoinCompopr($compopr)
+	{
+		if (is_array($compopr)) {
+			$cmps = [];
+			foreach ($compopr as $k => $v) {
+				if (!is_int($k)) {
+					$cmps[] = $this->parseWhere($k, $v);
+				} else {
+					$cmps[] = $this->parseJoinCompopr($v);
+				}
+			}
+			return ''.join(' AND ', $cmps);
+		}
+
+		list($lkey, $symbol, $rkey) = preg_split('/\s*([\=\!\<\>]+)\s*/', trim($compopr), 2, PREG_SPLIT_DELIM_CAPTURE);
+
+		return $this->quoteKeys($lkey).$symbol.$this->quoteKeys($rkey);
+	}
+
 	protected function buildWhere()
 	{
 		if (isset($this->builder['where'])) {
@@ -284,12 +346,14 @@ class QueryBuilder extends Connection {
 
 	protected function buildGroupBy()
 	{
-		return isset($this->builder['group_by']) ? ' GROUP BY '.$this->quoteKeys($this->builder['group_by']) : '';
+		return isset($this->builder['group_by']) ?
+			' GROUP BY '.$this->quoteKeys($this->builder['group_by']) : '';
 	}
 
 	protected function buildHaving()
 	{
-		return isset($this->builder['having']) ? ' HAVING '.$this->parseWhere($this->builder['having']) : '';
+		return isset($this->builder['having']) ?
+			' HAVING '.$this->parseWhere($this->builder['having']) : '';
 	}
 
 	protected function buildOrderBy()
@@ -373,7 +437,7 @@ class QueryBuilder extends Connection {
 			return join(', ', $qk);
 		}
 
-		if (!$single && strpos($keys,',') !== false) {
+		if (!$single && strpos($keys, ',') !== false) {
 			//split with comma[,] except in brackets[()] and single quots['']
 			$xkeys = preg_split('/,(?![^(\']*[\)\'])/', $keys);
 
@@ -556,7 +620,7 @@ class QueryBuilder extends Connection {
 
 				case 'LIKE':
 				case 'NOT LIKE':
-					return $key.' '.$cond.' '.$this->quoteValues($value);
+					return $key.' '.$cond.' '.$this->quote($value);
 					break;
 
 				case 'EXISTS':
@@ -564,12 +628,21 @@ class QueryBuilder extends Connection {
 					return $key.' '.$cond.'('.$value.')';
 					break;
 
+				case 'BETWEEN':
+					is_numeric($value[0]) || $value[0] = $this->quote($value[0]);
+					is_numeric($value[1]) || $value[1] = $this->quote($value[1]);
+					return "$key BETWEEN {$value[0]} AND {$value[1]}";
+					break;
+
 				default:
+					if (preg_match('/^\w+$/i', $cond)) {
+						$cond = ' '.$cond.' ';
+					}
 					return $key.$cond.$this->quoteValues($value);
 			}
 
 		} else {
-			return $this->quoteKeys($where).'='.$this->quoteValues($value);
+			return $this->quoteKeys($where).'='.$this->quote($value);
 		}
 	}
 
