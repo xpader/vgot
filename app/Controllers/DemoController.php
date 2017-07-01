@@ -72,7 +72,7 @@ class DemoController extends \vgot\Core\Controller
 
 		$db->where(['id'=>60])->update('text', ['ss'=>uniqid()]);
 
-		$result = $db->leftJoin('t2 w', 'id')->from('text t')->where(['t.id'=>60])->fetch();
+		$result = $db->leftJoin('t2 w', ['and', 't.id=w.id', ['or', 't.id'=>60, 't.text'=>'H']])->from('text t')->where(['t.id'=>60])->fetch();
 		print_r($result);
 
 		$result = $db->from('text')->where(['id between'=>[50, 55]])->union()->from('text')->where(['id'=>58])->fetchAll();

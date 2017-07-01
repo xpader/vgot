@@ -314,14 +314,26 @@ class QueryBuilder extends Connection {
 	{
 		if (is_array($compopr)) {
 			$cmps = [];
-			foreach ($compopr as $k => $v) {
-				if (!is_int($k)) {
-					$cmps[] = $this->parseWhere($k, $v);
-				} else {
-					$cmps[] = $this->parseJoinCompopr($v);
-				}
+
+			if (key($compopr) === 0 && ($t = strtoupper($compopr[0])) && ($t == 'AND' || $t == 'OR')) {
+				$join = $t;
+				unset($compopr[0]);
+			} else {
+				$join = 'AND';
 			}
-			return ''.join(' AND ', $cmps);
+
+			foreach ($compopr as $k => $v) {
+				$poly = false;
+				if (is_int($k)) {
+					$str = $this->parseJoinCompopr($v);
+					!$poly && count($v) > 1 && $poly = true;
+				} else {
+					$str = $this->parseWhere($k, $v);
+				}
+				$cmps[] = $poly ? '('.$str.')' : $str;
+			}
+
+			return join(" $join ", $cmps);
 		}
 
 		list($lkey, $symbol, $rkey) = preg_split('/\s*([\=\!\<\>]+)\s*/', trim($compopr), 2, PREG_SPLIT_DELIM_CAPTURE);
