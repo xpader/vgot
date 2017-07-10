@@ -7,6 +7,7 @@
  */
 namespace vgot\Core;
 
+use vgot\Cache\Cache;
 use vgot\Database\DB;
 use vgot\Exceptions\ApplicationException;
 use vgot\Exceptions\HttpNotFoundException;
@@ -20,6 +21,7 @@ use vgot\Exceptions\HttpNotFoundException;
  * @property View $view
  * @property Controller $controller
  * @property \vgot\Database\Connection|\vgot\Database\QueryBuilder $db
+ * @property \vgot\Cache\Cache $cache
  */
 class Application
 {
@@ -30,6 +32,7 @@ class Application
 	protected $view;
 	protected $controller;
 	protected $db;
+	protected $cache;
 
 	private static $instance;
 
@@ -55,6 +58,11 @@ class Application
 			case 'db':
 				if ($this->db === null) {
 					$this->db = DB::connection();
+				}
+				break;
+			case 'cache':
+				if ($this->cache === null) {
+					$this->cache = new Cache();
 				}
 				break;
 		}
