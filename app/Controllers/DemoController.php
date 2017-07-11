@@ -18,14 +18,9 @@ class DemoController extends \vgot\Core\Controller
 		echo 'WhatsApp';
 	}
 
-	public function dev()
+	public function app()
 	{
 		$app = \vgot\app();
-		$a = $app->db->from('text')->limit(10)->fetchAll();
-
-		print_r($app->db->getQueryRecords());
-
-		print_r($a);
 	}
 
 	public function gzip()
@@ -44,7 +39,7 @@ class DemoController extends \vgot\Core\Controller
 
 	public function view()
 	{
-		$this->render('index/index');
+		//$this->render('index/index');
 	}
 
 	public function db()

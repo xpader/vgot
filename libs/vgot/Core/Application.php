@@ -7,8 +7,6 @@
  */
 namespace vgot\Core;
 
-use vgot\Cache\Cache;
-use vgot\Database\DB;
 use vgot\Exceptions\ApplicationException;
 use vgot\Exceptions\HttpNotFoundException;
 
@@ -26,13 +24,14 @@ use vgot\Exceptions\HttpNotFoundException;
 class Application
 {
 
-	protected $config;
-	protected $router;
-	protected $output;
-	protected $view;
-	protected $controller;
-	protected $db;
-	protected $cache;
+	/**
+	 * Default providers
+	 * @var array
+	 */
+	protected $_define = [
+		'cache' => 'vgot\Cache\Cache',
+		'db' => 'vgot\Database\DB::connection'
+	];
 
 	private static $instance;
 
@@ -41,30 +40,37 @@ class Application
 		self::$instance = $this;
 
 		$this->config = new Config($archPath['config_path'], $archPath['common_config_path']);
-		$this->config->load('application');
-
-		$this->output = new Output();
-		$this->view = new View($archPath['views_path'], $archPath['common_views_path']);
 		$this->router = new Router($archPath['controller_namespace']);
+		$this->output = new Output();
+
+		$this->_define['view'] = [
+			'vgot\Core\View',
+			[$archPath['views_path'], $archPath['common_views_path']]
+		];
 	}
 
 	public function __get($name)
 	{
-		if ($this->$name !== null) {
-			return $this->$name;
+		if (!isset($this->_define[$name])) {
+			throw new \ErrorException("Undefined application property '$name'.");
 		}
 
-		switch ($name) {
-			case 'db':
-				if ($this->db === null) {
-					$this->db = DB::connection();
-				}
-				break;
-			case 'cache':
-				if ($this->cache === null) {
-					$this->cache = new Cache();
-				}
-				break;
+		$def = $this->_define[$name];
+
+		if (is_array($def)) {
+			$call = $def[0];
+			$args = isset($def[1]) ? $def[1] : null;
+		} else {
+			$call = $def;
+			$args = null;
+		}
+
+		if (is_string($call) && class_exists($call)) {
+			$this->$name = $args === null ? new $call() : (new \ReflectionClass($call))->newInstanceArgs($args);
+		} elseif (is_callable($call)) {
+			$this->$name = $args === null ? call_user_func($call) : call_user_func_array($call, $args);
+		} else {
+			throw new ApplicationException("Wrong format registered object '$name' to call.");
 		}
 
 		return $this->$name;
@@ -78,14 +84,14 @@ class Application
 	 * @param string $name
 	 * @param mixed $value
 	 */
-	public function __set($name, $value)
-	{
-		if (!isset($this->$name)) {
-			$this->$name = $value;
-		} else {
-			trigger_error("Uncaught Error: Cannot access protected property \\vgot\\Core\\Application::\${$name}", E_USER_WARNING);
-		}
-	}
+	//public function __set($name, $value)
+	//{
+	//	if (!isset($this->$name)) {
+	//		$this->$name = $value;
+	//	} else {
+	//		trigger_error("Uncaught Error: Cannot access protected property \\vgot\\Core\\Application::\${$name}", E_USER_WARNING);
+	//	}
+	//}
 
 	/**
 	 * 执行应用
@@ -94,7 +100,7 @@ class Application
 	 */
 	public function execute()
 	{
-		if ($this->controller !== null) {
+		if (isset($this->controller)) {
 			return;
 		}
 
@@ -105,6 +111,14 @@ class Application
 			throw new HttpNotFoundException();
 		}
 
+		//set config providers
+		$providers = $this->config->get('providers');
+
+		if (is_array($providers) && $providers) {
+			$this->_define = array_merge($this->_define, $providers);
+		}
+
+		//Invoke controller action
 		$this->controller = $instance = new $uri['controller'];
 
 		$action = !empty($uri['params'][0]) ? $uri['params'][0] : $this->config->get('default_action');
@@ -128,23 +142,30 @@ class Application
 	}
 
 	/**
-	 * 向实例中注册对象
+	 * Register object to application
 	 *
-	 * @param $name
-	 * @param $object
+	 * @param string $name
+	 * @param Object|string|array $object Object, class name to instance or callable to set return value.
+	 * @param array $args Arguments for instance class or callable.
 	 * @throws ApplicationException
 	 */
-	public function register($name, $object)
+	public function register($name, $object, $args=null)
 	{
 		if (isset($this->$name)) {
 			throw new ApplicationException("Can not register object because name '$name' exists in instance.");
 		}
 
-		$this->$name = $object;
+		if (is_object($object)) {
+			$this->$name = $object;
+		} elseif ($args === null) {
+			$this->_define[$name] = is_array($object) ? [$object] : $object;
+		} else {
+			$this->_define[$name] = [$object, $args];
+		}
 	}
 
 	/**
-	 * 获取应用实例
+	 * Get application instance
 	 *
 	 * @return Application
 	 */

@@ -9,6 +9,13 @@
 return [
 	'id' => 'Basic',
 	'base_url' => 'http://127.0.0.1/dev/vgot/public/',
+
+	//The providers to register
+	'providers' => [
+		'security' => ['vgot\Core\Security', ['test']]
+	],
+
+	//Output
 	'output_gzip' => true,
 	'output_gzip_level' => 8,
 	'output_gzip_minlen' => 1024, //1KB

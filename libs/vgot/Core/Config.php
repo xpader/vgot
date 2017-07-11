@@ -31,6 +31,8 @@ class Config
 		if ($commonConfigPath !== null) {
 			$this->searchPath[] = $commonConfigPath;
 		}
+
+		$this->load('application');
 	}
 
 	/**
