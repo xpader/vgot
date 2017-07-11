@@ -76,7 +76,7 @@ class Boot
 	public static function run()
 	{
 		//Register autoloads
-		spl_autoload_register('\\'.self::class.'::loadClass');
+		spl_autoload_register(self::class.'::loadClass');
 
 		$app = new Application(self::$archPath);
 
