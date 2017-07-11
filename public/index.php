@@ -13,7 +13,7 @@ define('BASE_PATH', realpath(__DIR__.'/..'));
 ini_set('display_errors', 'On');
 ini_set('error_reporting', E_ALL);
 
-require BASE_PATH.'/libs/vgot/Boot.php';
+require BASE_PATH.'/src/vgot/Boot.php';
 require BASE_PATH.'/vendor/autoload.php';
 
 Boot::addNamespaces([
