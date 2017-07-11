@@ -14,7 +14,10 @@ class Boot
 {
 
 	protected static $archPath = [];
-	protected static $namespaces = [];
+	protected static $namespaces = [
+		__NAMESPACE__ => __DIR__
+	];
+	protected static $autoloadStructs = [];
 
 	/**
 	 * 定义框架常规文件目录位置
@@ -26,16 +29,24 @@ class Boot
 		self::$archPath = $path;
 	}
 
-	public static function registerNamespaces($namespaces)
+	public static function addNamespaces($namespaces)
 	{
 		self::$namespaces += $namespaces;
+	}
+
+	public static function addAutoloadStructs($structs)
+	{
+		if (is_array($structs)) {
+			self::$autoloadStructs = array_merge(self::$autoloadStructs, $structs);
+		} else {
+			self::$autoloadStructs[] = $structs;
+		}
 	}
 
 	/**
 	 * Autoloader
 	 *
 	 * @param string $name
-	 * @return bool
 	 */
 	public static function loadClass($name)
 	{
@@ -44,7 +55,7 @@ class Boot
 
 		//Must have a namespace
 		if (count($arr) == 0) {
-			return false;
+			return;
 		}
 
 		if (isset(self::$namespaces[$ns])) {
@@ -52,9 +63,9 @@ class Boot
 			if (!is_file($filename)) {
 				unset($filename);
 			}
-		} elseif (!empty(self::$archPath['autoload_scan_dirs'])) {
+		} elseif (self::$autoloadStructs) {
 			$path = $ns.DIRECTORY_SEPARATOR.join(DIRECTORY_SEPARATOR, $arr).'.php';
-			foreach (self::$archPath['autoload_scan_dirs'] as $dir) {
+			foreach (self::$autoloadStructs as $dir) {
 				if (is_file($dir.DIRECTORY_SEPARATOR.$path)) {
 					$filename = $dir.DIRECTORY_SEPARATOR.$path;
 					break;
@@ -64,10 +75,7 @@ class Boot
 
 		if (isset($filename)) {
 			include $filename;
-			return class_exists($name, false);
 		}
-
-		return false;
 	}
 
 	/**
