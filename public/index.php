@@ -8,7 +8,7 @@
 
 use vgot\Boot;
 
-define('BASE_PATH', realpath(__DIR__.'/..'));
+define('BASE_PATH', realpath(__DIR__.'/..')); //constant only for app
 
 ini_set('display_errors', 'On');
 ini_set('error_reporting', E_ALL);
@@ -20,7 +20,7 @@ Boot::addNamespaces([
 	'app' => BASE_PATH.'/app',
 ]);
 
-//Boot::addAutoloadStructs();
+//Boot::addAutoloadStructs([BASE_PATH, BASE_PATH.'/src']);
 
 Boot::systemConfig([
 	'controller_namespace' => '\app\Controllers',
