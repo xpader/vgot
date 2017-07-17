@@ -109,11 +109,17 @@ class DemoController extends \vgot\Core\Controller
 	{
 		$app = Application::getInstance();
 		$app->register('cache', 'vgot\Cache\Cache', ['file', [
-			'basePath' => BASE_PATH.'/resource/cache',
-			'dirLevel' => 2
+			'stor_dir' => BASE_PATH.'/resource/cache',
+			'dir_level' => 2,
+			'cache_in_memory' => true
 		]]);
 
 		$cache = $app->cache;
+
+		//var_dump($cache->set('test', microtime(true), 5));
+
+		var_dump($cache->get('test'));
+		var_dump($cache->get('test'));
 
 		$val = $cache->get('This is a very long long key name');
 		//var_dump($val);

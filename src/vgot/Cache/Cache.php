@@ -37,12 +37,12 @@ class Cache
 
 	public function set($key, $value, $duration=0)
 	{
-
+		return $this->di->set($key, $value, $duration);
 	}
 
 	public function delete($key)
 	{
-
+		return $this->di->delete($key);
 	}
 
 }
