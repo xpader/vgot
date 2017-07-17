@@ -105,4 +105,18 @@ class DemoController extends \vgot\Core\Controller
 		print_r($db->getQueryRecords());
 	}
 
+	public function cache()
+	{
+		$app = Application::getInstance();
+		$app->register('cache', 'vgot\Cache\Cache', ['file', [
+			'basePath' => BASE_PATH.'/resource/cache',
+			'dirLevel' => 2
+		]]);
+
+		$cache = $app->cache;
+
+		$val = $cache->get('This is a very long long key name');
+		//var_dump($val);
+	}
+
 }
