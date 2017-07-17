@@ -113,13 +113,15 @@ class FileDriver implements DriverInterface {
 	{
 		$file = $this->getFilename($key);
 
-		if (is_file($file)) {
-			unlink($file);
+		if (is_file($file) && !unlink($file)) {
+			return false;
 		}
 
 		if ($this->cacheInMemory && isset($this->_cache[$key])) {
 			unset($this->_cache[$key]);
 		}
+
+		return true;
 	}
 
 	protected function getFilename($key)
