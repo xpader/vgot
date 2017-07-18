@@ -30,7 +30,7 @@ class Router
 	 */
 	public function __construct($ctrlNS)
 	{
-		$this->routes = \vgot\app()->config->load('routes', false, true);
+		$this->routes = Application::getInstance()->config->load('routes', false, true);
 		$this->ctrlNS = $ctrlNS;
 	}
 

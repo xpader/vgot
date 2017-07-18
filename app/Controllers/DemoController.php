@@ -7,7 +7,6 @@
  */
 namespace app\Controllers;
 
-use vgot\Core\Application;
 use vgot\Database\DB;
 
 class DemoController extends \vgot\Core\Controller
@@ -20,12 +19,12 @@ class DemoController extends \vgot\Core\Controller
 
 	public function app()
 	{
-		$app = \vgot\app();
+		$app = getApp();
 	}
 
 	public function gzip()
 	{
-		echo \vgot\app()->output->getMode();
+		echo getApp()->output->getMode();
 
 		var_dump(ini_get('zlib.output_compression'));
 
@@ -44,7 +43,7 @@ class DemoController extends \vgot\Core\Controller
 
 	public function db()
 	{
-		$db = Application::getInstance()->db;
+		$db = getApp()->db;
 
 		//$result = $db->from('text')->orderBy(['id'=>SORT_ASC])->groupBy('id')->fetchAll();
 		//print_r($result);
@@ -107,18 +106,24 @@ class DemoController extends \vgot\Core\Controller
 
 	public function cache()
 	{
-		$app = Application::getInstance();
-		$app->register('cache', 'vgot\Cache\Cache', ['file', [
-			'stor_dir' => BASE_PATH.'/resource/cache',
-			'dir_level' => 2,
-			'cache_in_memory' => true
-		]]);
+		$app = getApp();
+		//$app->register('cache', 'vgot\Cache\Cache', ['file', [
+		//	'stor_dir' => BASE_PATH.'/resource/cache',
+		//	'dir_level' => 2,
+		//	'cache_in_memory' => true
+		//]]);
+
+		$app->register('cache', 'vgot\Cache\Cache', ['database']);
 
 		$cache = $app->cache;
 
+		$di = $cache->getDriver();
+		//$di->createTable();
+
+		//return;
+
 		//var_dump($cache->set('test', microtime(true), 5));
 
-		var_dump($cache->get('test'));
 		var_dump($cache->get('test'));
 
 		$val = $cache->get('This is a very long long key name');

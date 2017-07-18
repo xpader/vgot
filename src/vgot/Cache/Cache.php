@@ -45,4 +45,9 @@ class Cache
 		return $this->di->delete($key);
 	}
 
+	public function getDriver()
+	{
+		return $this->di;
+	}
+
 }

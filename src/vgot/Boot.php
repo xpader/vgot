@@ -4,6 +4,8 @@ namespace vgot;
 
 use vgot\Core\Application;
 
+require __DIR__.'/Core/common.php';
+
 /**
  * Created by PhpStorm.
  * User: pader
@@ -102,16 +104,4 @@ class Boot
 		$app->execute();
 	}
 
-}
-
-/**
- * 获取应用实例
- *
- * @return Application
- */
-function app() {
-	return Application::getInstance();
-}
-
-function helper($helper) {
 }

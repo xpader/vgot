@@ -30,15 +30,7 @@ class FileDriver implements DriverInterface {
 
 	public function __construct($config)
 	{
-		foreach ($config as $k => $v) {
-			$k = preg_replace_callback('/_([a-z\d])/', function($m) {
-				return strtoupper($m[1]);
-			}, $k);
-
-			if (property_exists($this, $k)) {
-				$this->$k = $v;
-			}
-		}
+		configClass($this, $config);
 	}
 
 	public function get($key, $defaultValue=null)
