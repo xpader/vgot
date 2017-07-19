@@ -30,6 +30,11 @@ class FileCache implements CacheInterface {
 	public function __construct($config)
 	{
 		configClass($this, $config);
+
+		if ($this->storDir === null) {
+			throw new ApplicationException('$storDir must be configure when using '.__CLASS__);
+		}
+
 		$this->dirLevel > 16 && $this->dirLevel = 16;
 	}
 
@@ -37,7 +42,7 @@ class FileCache implements CacheInterface {
 	{
 		$file = $this->getFilename($key);
 
-		if ($this->cacheInMemory && isset($this->_cache[$key])) {
+		if ($this->cacheInMemory && array_key_exists($key, $this->_cache)) {
 			$data = $this->_cache[$key];
 		} else {
 			if (!is_file($file)) {
@@ -54,7 +59,7 @@ class FileCache implements CacheInterface {
 		$now = time();
 
 		if ($data['expired_at'] == 0 || $now < $data['expired_at']) {
-			if ($this->cacheInMemory && !isset($this->_cache[$key])) {
+			if ($this->cacheInMemory && !array_key_exists($key, $this->_cache)) {
 				$this->_cache[$key] = $data;
 			}
 
@@ -62,8 +67,9 @@ class FileCache implements CacheInterface {
 		}
 
 		@unlink($file);
+		$this->deleteOpcache($file);
 
-		if ($this->cacheInMemory && isset($this->_cache[$key])) {
+		if ($this->cacheInMemory && array_key_exists($key, $this->_cache)) {
 			unset($this->_cache[$key]);
 		}
 
@@ -111,7 +117,7 @@ class FileCache implements CacheInterface {
 			return false;
 		}
 
-		if ($this->cacheInMemory && isset($this->_cache[$key])) {
+		if ($this->cacheInMemory && array_key_exists($key, $this->_cache)) {
 			unset($this->_cache[$key]);
 		}
 

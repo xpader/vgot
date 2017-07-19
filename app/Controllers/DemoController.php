@@ -110,6 +110,7 @@ class DemoController extends \vgot\Core\Controller
 
 		$config = [
 			'stor_dir' => BASE_PATH.'/resource/cache',
+			'cache_in_memory' => true
 		];
 		$app->register('cache', 'vgot\Cache\FileCache', [$config]);
 
@@ -121,6 +122,7 @@ class DemoController extends \vgot\Core\Controller
 
 		//var_dump($cache->set('test123', microtime(), 0));
 
+		var_dump($cache->get('test123'));
 		var_dump($cache->get('test123'));
 
 		//print_r($app->db->getQueryRecords());
