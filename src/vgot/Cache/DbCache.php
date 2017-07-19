@@ -28,7 +28,7 @@ class DbCache implements CacheInterface
 
 	public function get($key, $defaultValue=null)
 	{
-		$pk = $this->getKey($key);
+		$pk = $this->buildKey($key);
 		$data = $this->db->query("SELECT `value`,`expired_at` FROM {$this->tableName} WHERE `key`="
 			.$this->db->quote($pk))->fetch();
 		//$data = $this->db->select('value,expired_at')->from($this->table)->where(['key'=>$pk])->fetch();
@@ -46,7 +46,7 @@ class DbCache implements CacheInterface
 
 	public function set($key, $value, $duration=0)
 	{
-		$pk = $this->getKey($key);
+		$pk = $this->buildKey($key);
 		$now = time();
 		$value = serialize($value);
 		$expiredAt = $duration == 0 ? $duration : $now + $duration;
@@ -59,12 +59,12 @@ class DbCache implements CacheInterface
 
 	public function delete($key)
 	{
-		$pk = $this->getKey($key);
+		$pk = $this->buildKey($key);
 		return (bool)$this->db->exec("DELETE FROM {$this->tableName} WHERE `key`=".$this->db->quote($pk));
 		//return (bool)$this->db->where(['key'=>$key])->delete($this->table);
 	}
 
-	public function getKey($key)
+	public function buildKey($key)
 	{
 		//Use >= not > can avoid same name as after convert
 		if (strlen($key) >= 64) {

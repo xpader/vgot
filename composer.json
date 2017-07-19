@@ -10,6 +10,7 @@
     }
   ],
   "require": {
-    "filp/whoops": "2.*"
+    "filp/whoops": "2.*",
+    "monolog/monolog": "^1.23"
   }
 }
