@@ -107,11 +107,11 @@ class DemoController extends \vgot\Core\Controller
 	public function cache()
 	{
 		$app = getApp();
-		//$app->register('cache', 'vgot\Cache\Cache', ['file', [
+
+		//$config = [
 		//	'stor_dir' => BASE_PATH.'/resource/cache',
-		//	'dir_level' => 2,
-		//	'cache_in_memory' => true
-		//]]);
+		//];
+		//$app->register('cache', 'vgot\Cache\FileCache', [$config]);
 
 		$app->register('cache', 'vgot\Cache\DbCache');
 
@@ -119,11 +119,11 @@ class DemoController extends \vgot\Core\Controller
 
 		//$cache->createTable();
 
-		//return;
+		//var_dump($cache->set('test123', microtime(), 0));
 
-		//var_dump($cache->set('test', microtime(true), 5));
+		var_dump($cache->get('test123'));
 
-		var_dump($cache->get('test'));
+		//print_r($app->db->getQueryRecords());
 
 		$val = $cache->get('This is a very long long key name');
 		//var_dump($val);

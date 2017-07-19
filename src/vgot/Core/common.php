@@ -6,7 +6,7 @@
  * Time: 17:14
  */
 
-function configClass($object, $config) {
+function configClass($object, array $config) {
 	foreach ($config as $k => $v) {
 		$k = preg_replace_callback('/_([a-z\d])/', function($m) {
 			return strtoupper($m[1]);

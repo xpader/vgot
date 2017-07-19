@@ -30,6 +30,7 @@ class FileCache implements CacheInterface {
 	public function __construct($config)
 	{
 		configClass($this, $config);
+		$this->dirLevel > 16 && $this->dirLevel = 16;
 	}
 
 	public function get($key, $defaultValue=null)
@@ -118,16 +119,19 @@ class FileCache implements CacheInterface {
 	protected function getFilename($key)
 	{
 		$hash = md5($key);
-		$path = '';
 
 		if ($this->dirLevel > 0) {
 			$seg = 2 * $this->dirLevel;
 			$prefix = str_split(substr($hash, 0, $seg), 2);
-			$path .= join(DIRECTORY_SEPARATOR, $prefix).DIRECTORY_SEPARATOR.substr($hash, $seg);
+			$path = join(DIRECTORY_SEPARATOR, $prefix).DIRECTORY_SEPARATOR;
+			if ($suffix = substr($hash, $seg)) {
+				$path .= $suffix.'_';
+			}
+		} else {
+			$path = $hash.'_';
 		}
 
-		$key = preg_replace('/[\?\*\s\$&\\\\\/\.]/', '_', $key);
-		$path .= '_'.$key;
+		$path .= str_replace(['?', '*', ' ', '$', '&', '\\', '/', '.'], '_', $key);
 
 		if (strlen($path) > 60) {
 			$path = substr($path, 0, 60);

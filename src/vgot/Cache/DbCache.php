@@ -31,6 +31,7 @@ class DbCache implements CacheInterface
 		$pk = $this->getKey($key);
 		$data = $this->db->query("SELECT `value`,`expired_at` FROM {$this->tableName} WHERE `key`="
 			.$this->db->quote($pk))->fetch();
+		//$data = $this->db->select('value,expired_at')->from($this->table)->where(['key'=>$pk])->fetch();
 
 		if ($data) {
 			$now = time();
@@ -50,16 +51,17 @@ class DbCache implements CacheInterface
 		$value = serialize($value);
 		$expiredAt = $duration == 0 ? $duration : $now + $duration;
 
-		//return (bool)$this->db->exec("REPLACE INTO {$this->tableName} SET `key`=".$this->db->quote($pk).",`value`="
-		//	.$this->db->quote($value).",`expired_at`=".$this->db->quote($expiredAt));
+		return (bool)$this->db->exec("REPLACE INTO {$this->tableName} SET `key`=".$this->db->quote($pk).",`value`="
+			.$this->db->quote($value).",`expired_at`=".$this->db->quote($expiredAt));
 
-		return (bool)$this->db->insert($this->table, ['key'=>$pk, 'value'=>$value, 'expired_at'=>$expiredAt]);
+		//return (bool)$this->db->insert($this->table, ['key'=>$pk, 'value'=>$value, 'expired_at'=>$expiredAt], true);
 	}
 
 	public function delete($key)
 	{
 		$pk = $this->getKey($key);
 		return (bool)$this->db->exec("DELETE FROM {$this->tableName} WHERE `key`=".$this->db->quote($pk));
+		//return (bool)$this->db->where(['key'=>$key])->delete($this->table);
 	}
 
 	public function getKey($key)
