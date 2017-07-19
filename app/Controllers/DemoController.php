@@ -113,12 +113,11 @@ class DemoController extends \vgot\Core\Controller
 		//	'cache_in_memory' => true
 		//]]);
 
-		$app->register('cache', 'vgot\Cache\Cache', ['database']);
+		$app->register('cache', 'vgot\Cache\DbCache');
 
 		$cache = $app->cache;
 
-		$di = $cache->getDriver();
-		//$di->createTable();
+		//$cache->createTable();
 
 		//return;
 

@@ -6,12 +6,11 @@
  * Time: 09:52
  */
 
-namespace vgot\Cache\Driver;
+namespace vgot\Cache;
 
-use vgot\Cache\DriverInterface;
 use vgot\Database\DB;
 
-class DatabaseDriver implements DriverInterface
+class DbCache implements CacheInterface
 {
 
 	public $connection;
@@ -51,8 +50,10 @@ class DatabaseDriver implements DriverInterface
 		$value = serialize($value);
 		$expiredAt = $duration == 0 ? $duration : $now + $duration;
 
-		return (bool)$this->db->exec("REPLACE INTO {$this->tableName} SET `key`=".$this->db->quote($pk).",`value`="
-			.$this->db->quote($value).",`expired_at`=".$this->db->quote($expiredAt));
+		//return (bool)$this->db->exec("REPLACE INTO {$this->tableName} SET `key`=".$this->db->quote($pk).",`value`="
+		//	.$this->db->quote($value).",`expired_at`=".$this->db->quote($expiredAt));
+
+		return (bool)$this->db->insert($this->table, ['key'=>$pk, 'value'=>$value, 'expired_at'=>$expiredAt]);
 	}
 
 	public function delete($key)

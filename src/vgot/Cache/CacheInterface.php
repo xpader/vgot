@@ -9,7 +9,7 @@
 namespace vgot\Cache;
 
 
-interface DriverInterface
+interface CacheInterface
 {
 
 	public function get($key, $defaultValue=null);

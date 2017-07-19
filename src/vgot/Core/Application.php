@@ -19,7 +19,7 @@ use vgot\Exceptions\HttpNotFoundException;
  * @property View $view
  * @property Controller $controller
  * @property \vgot\Database\Connection|\vgot\Database\QueryBuilder $db
- * @property \vgot\Cache\Cache $cache
+ * @property \vgot\Cache\CacheInterface $cache
  */
 class Application
 {

@@ -5,16 +5,15 @@
  * Date: 2017/7/15
  * Time: 01:18
  */
-namespace vgot\Cache\Driver;
+namespace vgot\Cache;
 
-use vgot\Cache\DriverInterface;
 use vgot\Exceptions\ApplicationException;
 
 /**
  * File Cache Driver
  * @package vgot\Cache\Driver
  */
-class FileDriver implements DriverInterface {
+class FileCache implements CacheInterface {
 
 	public $storDir;
 	public $dirLevel = 0;
