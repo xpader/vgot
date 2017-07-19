@@ -95,10 +95,12 @@ class FileCache implements CacheInterface {
 				$this->_cache[$key] = $data;
 			}
 
+			$this->deleteOpcache($file);
+
 			return true;
-		} else {
-			return false;
 		}
+
+		return false;
 	}
 
 	public function delete($key)
@@ -112,6 +114,8 @@ class FileCache implements CacheInterface {
 		if ($this->cacheInMemory && isset($this->_cache[$key])) {
 			unset($this->_cache[$key]);
 		}
+
+		$this->deleteOpcache($file);
 
 		return true;
 	}
@@ -140,7 +144,7 @@ class FileCache implements CacheInterface {
 		return $this->storDir.DIRECTORY_SEPARATOR.$path.'.php';
 	}
 
-	private function varExport($var, $level=0)
+	protected function varExport($var, $level=0)
 	{
 		switch (gettype($var)) {
 			case 'array':
@@ -171,6 +175,12 @@ class FileCache implements CacheInterface {
 		}
 
 		return $code;
+	}
+
+	protected function deleteOpcache($file) {
+		if (function_exists('opcache_is_script_cached') && opcache_is_script_cached($file)) {
+			opcache_invalidate($file);
+		}
 	}
 
 }

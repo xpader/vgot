@@ -108,12 +108,12 @@ class DemoController extends \vgot\Core\Controller
 	{
 		$app = getApp();
 
-		//$config = [
-		//	'stor_dir' => BASE_PATH.'/resource/cache',
-		//];
-		//$app->register('cache', 'vgot\Cache\FileCache', [$config]);
+		$config = [
+			'stor_dir' => BASE_PATH.'/resource/cache',
+		];
+		$app->register('cache', 'vgot\Cache\FileCache', [$config]);
 
-		$app->register('cache', 'vgot\Cache\DbCache');
+		//$app->register('cache', 'vgot\Cache\DbCache');
 
 		$cache = $app->cache;
 
