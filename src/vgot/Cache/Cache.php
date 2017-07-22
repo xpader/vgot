@@ -9,8 +9,7 @@
 namespace vgot\Cache;
 
 
-abstract class Cache
-{
+abstract class Cache {
 
 	public $keyPrefix = '';
 	public $maxKeyLength = 64;

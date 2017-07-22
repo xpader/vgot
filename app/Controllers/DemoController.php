@@ -115,14 +115,15 @@ class DemoController extends \vgot\Core\Controller
 		//	]
 		//]);
 
-		//$app->register('cache', 'vgot\Cache\DbCache');
+		$app->register('cache', 'vgot\Cache\DbCache');
 
-		$app->register('cache', 'vgot\Cache\Memcache', [
-			[
-				'host' => '127.0.0.1',
-				'key_prefix' => 'vgottest_'
-			]
-		]);
+		//$app->register('cache', 'vgot\Cache\Memcache', [
+		//	[
+		//		'host' => '127.0.0.1',
+		//		'port' => '11211',
+		//		'key_prefix' => 'vgottest_'
+		//	]
+		//]);
 
 		$cache = $app->cache;
 
