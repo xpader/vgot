@@ -10,8 +10,7 @@ namespace vgot\Cache;
 
 use vgot\Database\DB;
 
-class DbCache implements CacheInterface
-{
+class DbCache extends Cache {
 
 	public $connection;
 	public $table = 'cache';
@@ -24,6 +23,8 @@ class DbCache implements CacheInterface
 		configClass($this, $config);
 		$this->db = DB::connection($this->connection);
 		$this->tableName = $this->db->tableName($this->table);
+		$this->maxKeyLength = 64;
+		$this->keyPrefix = null;
 	}
 
 	public function get($key, $defaultValue=null)
@@ -62,16 +63,6 @@ class DbCache implements CacheInterface
 		$pk = $this->buildKey($key);
 		return (bool)$this->db->exec("DELETE FROM {$this->tableName} WHERE `key`=".$this->db->quote($pk));
 		//return (bool)$this->db->where(['key'=>$key])->delete($this->table);
-	}
-
-	public function buildKey($key)
-	{
-		//Use >= not > can avoid same name as after convert
-		if (strlen($key) >= 64) {
-			$key = md5($key).'_'.substr($key, 0, 31);
-		}
-
-		return $key;
 	}
 
 	public function createTable()

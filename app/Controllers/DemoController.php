@@ -107,28 +107,40 @@ class DemoController extends \vgot\Core\Controller
 	public function cache()
 	{
 		$app = getApp();
-
-		$config = [
-			'stor_dir' => BASE_PATH.'/resource/cache',
-			'cache_in_memory' => true
-		];
-		$app->register('cache', 'vgot\Cache\FileCache', [$config]);
+		//
+		//$app->register('cache', 'vgot\Cache\FileCache', [
+		//	[
+		//		'stor_dir' => BASE_PATH.'/resource/cache',
+		//		'cache_in_memory' => true
+		//	]
+		//]);
 
 		//$app->register('cache', 'vgot\Cache\DbCache');
+
+		$app->register('cache', 'vgot\Cache\Memcache', [
+			[
+				'host' => '127.0.0.1',
+				'key_prefix' => 'vgottest_'
+			]
+		]);
 
 		$cache = $app->cache;
 
 		//$cache->createTable();
 
-		//var_dump($cache->set('test123', microtime(), 0));
+		$data = $cache->get('test123');
 
-		var_dump($cache->get('test123'));
-		var_dump($cache->get('test123'));
+		if ($data === null) {
+			$data = [date('Y-m-d H:i:s'), 1, 2, 3];
+			var_dump($cache->set('test123', $data, 10));
+		}
+
+		var_dump($data);
 
 		//print_r($app->db->getQueryRecords());
 
-		$val = $cache->get('This is a very long long key name');
-		//var_dump($val);
+		$val = $cache->set('This is a very long long key name_long_long_long_long_name_long_long_long_long', '123123', 10);
+		var_dump($val);
 	}
 
 }

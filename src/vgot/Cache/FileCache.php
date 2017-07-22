@@ -13,7 +13,7 @@ use vgot\Exceptions\ApplicationException;
  * File Cache Driver
  * @package vgot\Cache\Driver
  */
-class FileCache implements CacheInterface {
+class FileCache extends Cache {
 
 	public $storDir;
 	public $dirLevel = 0;
