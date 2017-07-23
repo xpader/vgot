@@ -10,7 +10,7 @@ namespace vgot\Cache;
 use vgot\Exceptions\ApplicationException;
 
 /**
- * File Cache Driver
+ * File for Cache
  * @package vgot\Cache\Driver
  */
 class FileCache extends Cache {

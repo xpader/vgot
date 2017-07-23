@@ -12,7 +12,7 @@ namespace vgot\Cache;
 abstract class Cache {
 
 	public $keyPrefix = '';
-	public $maxKeyLength = 64;
+	public $maxKeyLength = 128;
 	protected $keyCompensation;
 
 	public abstract function get($key, $defaultValue=null);
