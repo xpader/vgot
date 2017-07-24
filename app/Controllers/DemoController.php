@@ -108,12 +108,12 @@ class DemoController extends \vgot\Core\Controller
 	{
 		$app = getApp();
 
-		$app->register('cache', 'vgot\Cache\FileCache', [
-			[
-				'stor_dir' => BASE_PATH.'/resource/cache',
-				'cache_in_memory' => true
-			]
-		]);
+		//$app->register('cache', 'vgot\Cache\FileCache', [
+		//	[
+		//		'stor_dir' => BASE_PATH.'/resource/cache',
+		//		'cache_in_memory' => true
+		//	]
+		//]);
 
 		//$app->register('cache', 'vgot\Cache\DbCache');
 
@@ -125,14 +125,14 @@ class DemoController extends \vgot\Core\Controller
 		//	]
 		//]);
 
-		//$app->register('cache', 'vgot\Cache\Redis', [
-		//	[
-		//		'host' => '127.0.0.1',
-		//		'key_prefix' => 'vgottest_',
-		//		'serialize' => 'php',
-		//		'max_key_length' => 64
-		//	]
-		//]);
+		$app->register('cache', 'vgot\Cache\Redis', [
+			[
+				'host' => '127.0.0.1',
+				'key_prefix' => 'vgottest_',
+				'serialize' => 'igbinary',
+				'max_key_length' => 64
+			]
+		]);
 
 		///** @var \vgot\Cache\Memcache $cache */
 		$cache = $app->cache;

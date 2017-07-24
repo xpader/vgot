@@ -42,27 +42,27 @@ class Memcache extends Cache {
 		$this->close();
 	}
 
-	public function __call($name, $args) {
-		$call = [$this->memcache, $name];
-
-		if (!is_callable($call)) {
-			throw new \ErrorException("Call to undefined method: ".__CLASS__."::$$name()");
-			//trigger_error("Call to undefined method: ".__CLASS__."::$$name()", E_USER_ERROR);
-		}
-
-		switch ($name) {
-			case 'add':
-			case 'replace':
-				$args[2] = $this->flag; //flag
-				$args[3] = empty($args[3]) ? 0 : time() + $args[3]; //duration
-			case 'decrement':
-			case 'increment':
-				$args[0] = $this->buildKey($args[0]); //key
-				break;
-		}
-
-		return call_user_func_array($call, $args);
-	}
+	//public function __call($name, $args) {
+	//	$call = [$this->memcache, $name];
+	//
+	//	if (!is_callable($call)) {
+	//		throw new \ErrorException("Call to undefined method: ".__CLASS__."::$$name()");
+	//		//trigger_error("Call to undefined method: ".__CLASS__."::$$name()", E_USER_ERROR);
+	//	}
+	//
+	//	switch ($name) {
+	//		case 'add':
+	//		case 'replace':
+	//			$args[2] = $this->flag; //flag
+	//			$args[3] = empty($args[3]) ? 0 : time() + $args[3]; //duration
+	//		case 'decrement':
+	//		case 'increment':
+	//			$args[0] = $this->buildKey($args[0]); //key
+	//			break;
+	//	}
+	//
+	//	return call_user_func_array($call, $args);
+	//}
 
 	public function connect()
 	{
