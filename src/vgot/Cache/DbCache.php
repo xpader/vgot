@@ -14,6 +14,7 @@ class DbCache extends Cache {
 
 	public $connection;
 	public $table = 'cache';
+	public $gcProbability = 10; //0.001%
 
 	protected $db;
 	protected $tableName;
@@ -32,7 +33,6 @@ class DbCache extends Cache {
 		$pk = $this->buildKey($key);
 		$data = $this->db->query("SELECT `value`,`expired_at` FROM {$this->tableName} WHERE `key`="
 			.$this->db->quote($pk))->fetch();
-		//$data = $this->db->select('value,expired_at')->from($this->table)->where(['key'=>$pk])->fetch();
 
 		if ($data) {
 			$now = time();
@@ -47,6 +47,8 @@ class DbCache extends Cache {
 
 	public function set($key, $value, $duration=0)
 	{
+		$this->gc();
+
 		$pk = $this->buildKey($key);
 		$now = time();
 		$value = serialize($value);
@@ -54,15 +56,26 @@ class DbCache extends Cache {
 
 		return (bool)$this->db->exec("REPLACE INTO {$this->tableName} SET `key`=".$this->db->quote($pk).",`value`="
 			.$this->db->quote($value).",`expired_at`=".$this->db->quote($expiredAt));
-
-		//return (bool)$this->db->insert($this->table, ['key'=>$pk, 'value'=>$value, 'expired_at'=>$expiredAt], true);
 	}
 
 	public function delete($key)
 	{
 		$pk = $this->buildKey($key);
 		return (bool)$this->db->exec("DELETE FROM {$this->tableName} WHERE `key`=".$this->db->quote($pk));
-		//return (bool)$this->db->where(['key'=>$key])->delete($this->table);
+	}
+
+	/**
+	 * Garbage Collection
+	 * Remove expired cache data.
+	 *
+	 * @param bool $force
+	 */
+	public function gc($force=false)
+	{
+		if ($force || mt_rand(0, 1000000) < $this->gcProbability) {
+			$expire = time();
+			$this->db->exec("DELETE FROM {$this->tableName} WHERE `expired_at` BETWEEN 1 AND $expire");
+		}
 	}
 
 	public function createTable()

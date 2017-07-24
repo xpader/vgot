@@ -17,6 +17,7 @@ class FileCache extends Cache {
 
 	public $storDir;
 	public $dirLevel = 0;
+	public $gcProbability = 10; //0.001%
 
 	/**
 	 * Cache in current request process memory
@@ -49,9 +50,10 @@ class FileCache extends Cache {
 				return $defaultValue;
 			}
 
-			$data = include $file;
+			$data = @include $file;
 
 			if (!is_array($data)) {
+				$this->deleteFile($file);
 				return $defaultValue;
 			}
 		}
@@ -62,12 +64,10 @@ class FileCache extends Cache {
 			if ($this->cacheInMemory && !array_key_exists($key, $this->_cache)) {
 				$this->_cache[$key] = $data;
 			}
-
 			return $data['value'];
 		}
 
-		@unlink($file);
-		$this->deleteOpcache($file);
+		$this->deleteFile($file);
 
 		if ($this->cacheInMemory && array_key_exists($key, $this->_cache)) {
 			unset($this->_cache[$key]);
@@ -92,28 +92,29 @@ class FileCache extends Cache {
 		if (!is_file($file)) {
 			$dir = dirname($file);
 			if (!is_dir($dir) && !@mkdir($dir, 0755, true)) {
-				throw new ApplicationException('Set cache failed, create dir error: '.error_get_last());
+				$error = error_get_last();
+				throw new ApplicationException('Unable to create cache directory: '.$error['message']);
 			}
 		}
 
-		if (file_put_contents($file, $content, LOCK_EX) !== false) {
-			if ($this->cacheInMemory) {
-				$this->_cache[$key] = $data;
-			}
-
-			$this->deleteOpcache($file);
-
-			return true;
+		if (@file_put_contents($file, $content, LOCK_EX) === false) {
+			$error = error_get_last();
+			throw new ApplicationException('Unable to create cache directory: '.$error['message']);
+			//return false;
 		}
 
-		return false;
+		$this->cacheInMemory && $this->_cache[$key] = $data;
+		$this->deleteOpcache($file);
+		$this->gc();
+
+		return true;
 	}
 
 	public function delete($key)
 	{
 		$file = $this->getFilename($key);
 
-		if (is_file($file) && !unlink($file)) {
+		if (is_file($file) && !$this->deleteFile($file)) {
 			return false;
 		}
 
@@ -121,9 +122,48 @@ class FileCache extends Cache {
 			unset($this->_cache[$key]);
 		}
 
-		$this->deleteOpcache($file);
+		$this->deleteFile($file);
 
 		return true;
+	}
+
+	/**
+	 * Garbage Collection
+	 * Remove expired cache files.
+	 *
+	 * @param bool $force
+	 */
+	public function gc($force=false)
+	{
+		if (!$force && !(mt_rand(0, 1000000) < $this->gcProbability)) {
+			return;
+		}
+
+		$now = time();
+
+		$gcr = function($path) use (&$gcr, $now) {
+			if (($handle = opendir($path)) !== false) {
+				while (($file = readdir($handle)) !== false) {
+					if ($file == '.' || $file == '..') {
+						continue;
+					}
+					$fullPath = $path . DIRECTORY_SEPARATOR . $file;
+					if (is_dir($fullPath)) {
+						$gcr($fullPath);
+						@rmdir($fullPath);
+					} else {
+						$data = @include $fullPath;
+						if (!is_array($data) || ($data['expired_at'] > 0 && $data['expired_at'] < $now)) {
+							unlink($fullPath);
+							$this->deleteOpcache($fullPath);
+						}
+					}
+				}
+				closedir($handle);
+			}
+		};
+
+		$gcr($this->storDir);
 	}
 
 	protected function getFilename($key)
@@ -183,7 +223,15 @@ class FileCache extends Cache {
 		return $code;
 	}
 
-	protected function deleteOpcache($file) {
+	protected function deleteFile($file)
+	{
+		$delete = unlink($file);
+		$this->deleteOpcache($file);
+		return $delete;
+	}
+
+	protected function deleteOpcache($file)
+	{
 		if (function_exists('opcache_is_script_cached') && opcache_is_script_cached($file)) {
 			opcache_invalidate($file);
 		}
