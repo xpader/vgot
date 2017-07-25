@@ -29,7 +29,6 @@ class Application
 	 * @var array
 	 */
 	protected $_define = [
-		'cache' => 'vgot\Cache\Cache',
 		'db' => 'vgot\Database\DB::connection'
 	];
 
@@ -120,19 +119,9 @@ class Application
 
 		//Invoke controller action
 		$this->controller = $instance = new $uri['controller'];
+		$action = $this->router->findAction($instance, $uri['params']);
 
-		$action = !empty($uri['params'][0]) ? $uri['params'][0] : $this->config->get('default_action');
-
-		if ($this->config->get('case_symbol')) {
-			$action = $this->router->symbolConvert($action);
-		}
-
-		if (is_callable([$instance, $action])
-			|| ($action = 'action'.ucfirst($action) && is_callable([$instance, $action]))) {
-			unset($uri['params'][0]);
-		} elseif (is_callable([$instance, '_redirect'])) {
-			$action = '_redirect';
-		} else { //Action not found
+		if ($action === false) {
 			throw new HttpNotFoundException();
 		}
 
