@@ -26,7 +26,7 @@ class Router
 	/**
 	 * Router constructor.
 	 *
-	 * @param string $ctrlNS Controller Namespace
+	 * @param string $namespace Controller Namespace
 	 */
 	public function __construct($namespace)
 	{
@@ -114,7 +114,8 @@ class Router
 	 *
 	 * @return mixed|string
 	 */
-	protected function exportURI() {
+	protected function exportURI()
+	{
 		//export the request uri
 		$sourceUri = isset($_SERVER['PATH_INFO']) ? trim($_SERVER['PATH_INFO'], '/') : '';
 

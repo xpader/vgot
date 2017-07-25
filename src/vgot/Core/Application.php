@@ -13,9 +13,10 @@ use vgot\Exceptions\HttpNotFoundException;
 /**
  * Vgot Application
  *
- * @property Router $router
  * @property Config $config
+ * @property Input $input
  * @property Output $output
+ * @property Router $router
  * @property View $view
  * @property Controller $controller
  * @property \vgot\Database\Connection|\vgot\Database\QueryBuilder $db
@@ -39,8 +40,9 @@ class Application
 		self::$instance = $this;
 
 		$this->config = new Config($archPath['config_path'], $archPath['common_config_path']);
-		$this->router = new Router($archPath['controller_namespace']);
+		$this->input = new Input();
 		$this->output = new Output();
+		$this->router = new Router($archPath['controller_namespace']);
 
 		$this->_define['view'] = [
 			'vgot\Core\View',
