@@ -91,7 +91,7 @@ class Sqlite3Driver extends DriverInterface {
 		}
 
 		$fetchType = $this->getFetchType($fetchType);
-		return $query->fetchArray($fetchType);
+		return $query->fetchArray($fetchType) ?: null;
 	}
 
 	public function fetchAll($query, $fetchType=DB::FETCH_ASSOC)

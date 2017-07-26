@@ -52,7 +52,7 @@ abstract class DriverInterface {
 	 *
 	 * @param mixed $query
 	 * @param int $fetchType
-	 * @return array|bool
+	 * @return array|false|null
 	 */
 	abstract public function fetch($query, $fetchType);
 
