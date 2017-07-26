@@ -110,6 +110,21 @@ class Router
 	}
 
 	/**
+	 * Get request router uri
+	 *
+	 * @param string $key Specify to get: source, real, array, controller, params
+	 * @return array|string
+	 */
+	public function getUri($key=null)
+	{
+		if ($key === null) {
+			return $this->uri;
+		} else {
+			return isset($this->uri[$key]) ? $this->uri[$key] : null;
+		}
+	}
+
+	/**
 	 * Explain and translate the true uri
 	 *
 	 * @return mixed|string

@@ -157,4 +157,12 @@ class DemoController extends \vgot\Core\Controller
 		$cache->gc();
 	}
 
+	public function input()
+	{
+		$app = getApp();
+
+		var_dump($app->input->server('HTTP_USER_AGENT', 'default'));
+		var_dump($app->input->clientIp());
+	}
+
 }

@@ -9,6 +9,8 @@
 namespace vgot\Core;
 
 
+use vgot\Exceptions\ApplicationException;
+
 class Input
 {
 
@@ -18,14 +20,34 @@ class Input
 	 * Get request data and you can use function to filter data
 	 *
 	 * @param string $name
-	 * @param string $functions Use function to filter request, example: 'trim|html2text|stripslashes'
+	 * @param mixed $defaultValue
+	 * @param string|callable $filter Use function to filter request, eg: 'trim|html2text|stripslashes'
 	 * @return mixed Filtered request content
 	 */
-	public function get($name, $functions=NULL) { return $this->fetchGPC($_GET, $name, $functions); }
-	public function post($name, $functions=NULL) { return $this->fetchGPC($_POST, $name, $functions); }
-	public function cookie($name, $functions=NULL) { return $this->fetchGPC($_COOKIE, $name, $functions); }
-	public function server($name, $functions=NULL) { return $this->fetchGPC($_SERVER, $name, $functions); }
-	public function request($name, $functions=NULL) { return $this->fetchGPC($_REQUEST, $name, $functions); }
+	public function get($name, $defaultValue=null, $filter=null)
+	{
+		return $this->fetchVar($_GET, $name, $defaultValue, $filter);
+	}
+
+	public function post($name, $defaultValue=null, $filter=null)
+	{
+		return $this->fetchVar($_POST, $name, $defaultValue, $filter);
+	}
+
+	public function cookie($name, $defaultValue=null, $filter=null)
+	{
+		return $this->fetchVar($_COOKIE, $name, $defaultValue, $filter);
+	}
+
+	public function server($name, $defaultValue=null, $filter=null)
+	{
+		return $this->fetchVar($_SERVER, $name, $defaultValue, $filter);
+	}
+
+	public function request($name, $defaultValue=null, $filter=null)
+	{
+		return $this->fetchVar($_REQUEST, $name, $defaultValue, $filter);
+	}
 
 
 	/**
@@ -34,64 +56,71 @@ class Input
 	 * It will fetch GET first, if none set int GET, then fetch POST
 	 *
 	 * @param string $name
-	 * @param null $functions
+	 * @param mixed $defaultValue
+	 * @param string|callable $filter
 	 * @return mixed
 	 */
-	public function gp($name,$functions=NULL) {
-		return isset($_GET[$name]) ? $this->fetchGPC($_GET, $name, $functions) : $this->fetchGPC($_POST, $name, $functions);
+	public function gp($name, $defaultValue=null, $filter=null) {
+		return isset($_GET[$name]) ? $this->fetchVar($_GET, $name, $defaultValue, $filter)
+			: $this->fetchVar($_POST, $name, $defaultValue, $filter);
 	}
 
 	/**
-	 * 获取URI段
+	 * Get URI segment value
 	 *
-	 * @param int $number 获取第几段
-	 * @return URI segment
+	 * @param int $number Which segment
+	 * @return string
 	 */
 	public function segment($number)
 	{
-		$number--;
-		$uri = $this->uri('uri');
-		return isset($uri[$number]) ? $uri[$number] : NULL;
+		$uri = $this->uri('array');
+		return isset($uri[$number]) ? $uri[$number] : null;
 	}
 
 	/**
-	 * 获取参数列表
+	 * Get params list
 	 *
-	 * 可以用于 list() 把参数具体变量化
-	 * 例：list($id,$page,$style) = $this->input->params(3);
-	 * 使用 function action($id='',$page='',$style='') 的缺点是你必须设定每个参数的默认值，比较繁琐
-	 * 如果没有设定默认值，则 PHP 会在参数不完整时报错
+	 * Cas use for list() to take params elements as an variable.
+	 * eg: list($id,$page,$style) = $this->input->params(3);
+	 * Use function action($id='',$page='',$style='') is bad, because you need to set default value else
+	 * php will unexcepted error
 	 *
-	 * @param int|bool $length 返回参数数组的长度，当参数数组长度不够时，会自动使用 NULL 填充到此长度以确保 list() 能正常工作
+	 * @param int $length Return array length, 0 for all. when elements is not enough, the array will been padded null
+	 * element to full length.
 	 * @return array Params
 	 */
-	public function params($length=TRUE)
+	public function params($length=0)
 	{
-		if ($length === TRUE or isset($GLOBALS['URI']['params'][$length-1])) {
-			return $GLOBALS['URI']['params'];
+		$params = $this->uri('params');
+
+		if ($length == 0) {
+			return $params;
 		} else {
-			$params = $this->uri('params');
-			return array_pad($params, $length, NULL);
+			if (isset($params[$length - 1])) {
+				return $params;
+			} else {
+				return array_pad($params, $length, null);
+			}
 		}
 	}
 
 	/**
-	 * 将段以 name/value/name/value 的形式组成数组返回
+	 * Get from uri like name/value/name/value as an array
 	 *
-	 * @param bool $pos 设为数字时为从 URI 第几段算起,默认从动作之后
+	 * @param bool $pos Which segment start, else started after action
 	 * @return array URI Assoc Data
 	 */
-	public function assoc($pos=TRUE)
+	public function assoc($pos=null)
 	{
-		if ($pos === TRUE) {
+		if ($pos === null) {
 			$params = $this->uri('params');
 		} else {
-			$params = $pos > 1 ? array_slice($this->uri('uri'),$pos-1) : $this->uri('uri');
+			$params = $pos > 1 ? array_slice($this->uri('array'),$pos-1) : $this->uri('array');
 		}
 
 		$assoc = array();
 		foreach (array_chunk($params,2) as $row) {
-			$assoc[$row[0]] = isset($row[1]) ? $row[1] : NULL;
+			$assoc[$row[0]] = isset($row[1]) ? $row[1] : null;
 		}
 
 		return $assoc;
@@ -100,143 +129,82 @@ class Input
 	/**
 	 * Get URI Parameter
 	 *
-	 * file|controller|action|params|string|uri|route
+	 * Specify to get: source, real, array, controller, params
 	 *
 	 * @param string $key
 	 * @return string|array
 	 */
-	public function uri($key=NULL)
+	public function uri($key=null)
 	{
-		if (is_null($key)) {
-			return $GLOBALS['URI'];
-		} else {
-			return $GLOBALS['URI'][$key];
-		}
+		return Application::getInstance()->router->getUri($key);
 	}
 
 	/**
-	 * 获取访问者IP地址
+	 * Get IP Address
 	 *
-	 * @return IP Address
+	 * @return string
 	 */
-	public function ipAddress()
+	public function clientIp()
 	{
-		if($this->ip != '') return $this->ip;
-
-		if(!empty($_SERVER['HTTP_CLIENT_IP'])) $ip = $this->server('HTTP_CLIENT_IP');
-		elseif(!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) $ip = $this->server('HTTP_X_FORWARDED_FOR');
-		elseif(!empty($_SERVER['REMOTE_ADDR'])) $ip = $this->server('REMOTE_ADDR');
+		if (!empty($_SERVER['HTTP_CLIENT_IP'])) $ip = $this->server('HTTP_CLIENT_IP');
+		elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) $ip = $this->server('HTTP_X_FORWARDED_FOR');
+		elseif (!empty($_SERVER['REMOTE_ADDR'])) $ip = $this->server('REMOTE_ADDR');
 		else $ip = '';
 
 		preg_match('/[\d\.]{7,15}/', $ip, $ips);
 		$this->ip = !empty($ips[0]) ? $ips[0] : 'unknown';
 		unset($ips);
 
-		return $this->ip;
+		return $ip;
 	}
 
 	/**
-	 * 提取HTML中的文本内容,清除HTML代码
+	 * Fetch value from GPCS vars, and apply filters.
+	 *
+	 * @param array $gpcs
+	 * @param string $key
+	 * @param mixed $defaultValue
+	 * @param array|string $filter
+	 * @return mixed
+	 * @throws
+	 */
+	public function fetchVar(&$gpcs, $key, $defaultValue=null, $filter=null)
+	{
+		if (!isset($gpcs[$key])) return $defaultValue;
+
+		$var = $gpcs[$key];
+
+		if (!$filter) return $var;
+
+		if (!is_array($filter)) {
+			$filter = explode('|', $filter);
+		}
+
+		foreach ($filter as $func) {
+			if (is_callable($func)) {
+				$var = $func($var);
+			} elseif (method_exists($this, 'filter'.ucfirst($func))) {
+				$var = $this->{'filter'.ucfirst($func)}($var);
+			} else {
+				throw new ApplicationException("Undefined filter '$filter' for input!");
+			}
+		}
+
+		return $var;
+	}
+
+	/**
+	 * Get text from html, remove tags.
 	 *
 	 * @param string $str HTML code
 	 * @return string
 	 */
-	public function html2text($str)
+	public function filterHtml2text($str)
 	{
-		$str = preg_replace("/<sty(.*)\\/style>|<scr(.*)\\/script>|<!--(.*)-->/isU",'',$str);
+		$str = preg_replace('/<sty(.*)\\/style>|<scr(.*)\\/script>|<!--(.*)-->/isU', '', $str);
 		$str = str_replace(array('<br />','<br>','<br/>'), "\n", $str);
 		$str = strip_tags($str);
 		return $str;
-	}
-
-	/**
-	 * 检查是否正确提交了表单 //debug 此函数还处于调试阶段
-	 *
-	 * @param string $var 需要检查的变量
-	 * @param bool $allowget 是否允许GET方式
-	 * @param bool $seccodecheck 验证码检测是否开启
-	 * @return bool
-	 */
-	public function isSubmit($var, $allowget=false, $seccodecheck=false)
-	{
-		if(empty($GLOBALS['_REQUEST'][$var])) {
-			return FALSE;
-		} else {
-			global $_SERVER;
-			if($allowget || ($_SERVER['REQUEST_METHOD'] == 'POST' && (empty($_SERVER['HTTP_REFERER']) ||
-						preg_replace("/https?:\/\/([^\:\/]+).*/i", "\\1", $_SERVER['HTTP_REFERER']) == preg_replace("/([^\:]+).*/", "\\1", $_SERVER['HTTP_HOST'])))) {
-				return TRUE;
-			} else {
-				showError('submit_invalid');//debug 此处还缺少
-			}
-		}
-	}
-
-	/**
-	 * Array Deep Add Slashes
-	 *
-	 * @param array|string $var
-	 * @return array|string
-	 */
-	public function deepAddslashes($var)
-	{
-		if (is_array($var)) {
-			foreach($var as $key => $val) {
-				$var[$key] = $this->deepAddslashes($val);
-			}
-			return $var;
-		} else return addslashes($var);
-	}
-
-	/**
-	 * Array Deep Strip Slashes
-	 *
-	 * @param array|string $var
-	 * @return
-	 */
-	public function deepStripslashes($var)
-	{
-		if(is_array($var)) {
-			foreach($var as $key => $val) {
-				$var[$key] = $this->deepStripslashes($val);
-			}
-			return $var;
-		} else return stripslashes($var);
-	}
-
-
-
-	/**
-	 * 返回指定全局请求的值
-	 *
-	 * @param array $GPC
-	 * @param string $key
-	 * @param bool $functions
-	 * @return mixed Var
-	 */
-	private function fetchGPC(&$GPC, $key, $functions=NULL)
-	{
-		if (!isset($GPC[$key])) return null;
-
-		$var = $GPC[$key];
-
-		if (!$functions) {
-			return $var;
-		} else {
-			if (!is_array($functions)) {
-				$functions = explode('|',$functions);
-			}
-			foreach ($functions as $f) {
-				if (function_exists($f)) {
-					$var = $f($var);
-				} elseif (method_exists($this,$f)) {
-					$var = $this->$f($var);
-				} else {
-					showError('Unabled to call function '.$f.'()', true, 2);
-				}
-			}
-			return $var;
-		}
 	}
 
 }
