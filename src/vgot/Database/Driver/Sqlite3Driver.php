@@ -20,6 +20,8 @@ use vgot\Database\DriverInterface;
  */
 class Sqlite3Driver extends DriverInterface {
 
+	public $type = 'sqlite';
+
 	/**
 	 * @var \Exception
 	 */

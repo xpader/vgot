@@ -27,6 +27,10 @@ class PdoDriver extends DriverInterface {
 
 	public function connect($config)
 	{
+		if (!isset($config['type'])) {
+			throw new DatabaseException('Must specify \'type\' when using PDO driver!');
+		}
+
 		//firebird,mssql,mysql,oci,oci8,odbc,pgsql,sqlite
 		switch ($config['type']) {
 			case 'mysql':
@@ -67,6 +71,8 @@ class PdoDriver extends DriverInterface {
 			default:
 				throw new DatabaseException('Unable to connect database', "Not yet supported database type: '{$config['type']}'");
 		}
+
+		$this->type = $config['type'];
 
 		//Connect
 		try {

@@ -52,7 +52,7 @@ class Connection
 	public function connect()
 	{
 		if (!$this->di->connect($this->config)) {
-			switch ($this->config['type']) {
+			switch ($this->di->type) {
 				case 'mysql': $server = 'MySQL Server'; break;
 				case 'sqlserv': $server = 'SQLServer'; break;
 				case 'sqlite': $server = 'SQLite'; break;

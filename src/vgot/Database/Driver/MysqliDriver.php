@@ -13,6 +13,8 @@ use vgot\Database\DriverInterface;
 
 class MysqliDriver extends DriverInterface {
 
+	public $type = 'mysql';
+
 	public function connect($config)
 	{
 		$socket = isset($config['socket']) ? $config['socket'] : '';

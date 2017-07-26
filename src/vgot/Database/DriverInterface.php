@@ -11,6 +11,7 @@ namespace vgot\Database;
 
 abstract class DriverInterface {
 
+	public $type;
 	protected $conn;
 
 	/**
