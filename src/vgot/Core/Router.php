@@ -92,12 +92,15 @@ class Router
 
 		if (is_callable([$instance, $action])
 			|| (($action = 'action'.ucfirst($action)) && is_callable([$instance, $action]))) {
-			unset($params[0]);
+			array_shift($params);
 		} elseif (is_callable([$instance, '_redirect'])) {
 			$action = '_redirect';
 		} else {
 			return false;
 		}
+
+		$this->uri['action'] = $action;
+		$this->uri['params'] = $params;
 
 		return $action;
 	}
