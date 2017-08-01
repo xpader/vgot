@@ -152,8 +152,7 @@ class Input
 		else $ip = '';
 
 		preg_match('/[\d\.]{7,15}/', $ip, $ips);
-		$this->ip = !empty($ips[0]) ? $ips[0] : 'unknown';
-		unset($ips);
+		$ip = !empty($ips[0]) ? $ips[0] : 'unknown';
 
 		return $ip;
 	}
