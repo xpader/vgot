@@ -119,14 +119,23 @@ class Application
 			$this->_define = array_merge($this->_define, $providers);
 		}
 
-		//Invoke controller action
+		/**
+		 * Invoke controller action
+		 * @var $instance Controller
+		 */
 		$this->controller = $instance = new $uri['controller'];
+
+		if ($instance instanceof Controller === false) {
+			throw new ApplicationException($uri['controller'].' is not a controller class.');
+		}
+
 		$action = $this->router->findAction($instance, $uri['params']);
 
 		if ($action === false) {
 			throw new HttpNotFoundException();
 		}
 
+		$instance->init();
 		call_user_func_array([$instance, $action], $uri['params']);
 
 		$this->output->flush();

@@ -12,6 +12,12 @@ namespace vgot\Core;
 abstract class Controller extends Base
 {
 
+	/**
+	 * Initialize after __construct, before action
+	 */
+	public function init()
+	{}
+
 	protected function render($name, $vars=null, $return=false)
 	{
 		return $this->view->render($name, $vars, $return);

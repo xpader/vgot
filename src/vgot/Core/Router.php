@@ -90,8 +90,10 @@ class Router
 			$action = $this->camelCase($action);
 		}
 
-		if (is_callable([$instance, $action])
-			|| (($action = 'action'.ucfirst($action)) && is_callable([$instance, $action]))) {
+		if (
+			(is_callable([$instance, $action]) && $action != 'init')
+			|| (($action = 'action'.ucfirst($action)) && is_callable([$instance, $action]))
+		) {
 			array_shift($params);
 		} elseif (is_callable([$instance, '_redirect'])) {
 			$action = '_redirect';
