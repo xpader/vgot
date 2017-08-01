@@ -126,6 +126,21 @@ class PdoDriver extends DriverInterface {
 		return $this->conn->exec($sql);
 	}
 
+	public function beginTransaction()
+	{
+		return $this->conn->beginTransaction();
+	}
+
+	public function commit()
+	{
+		return $this->conn->commit();
+	}
+
+	public function rollback()
+	{
+		return $this->conn->rollBack();
+	}
+
 	public function fetch($query, $fetchType=DB::FETCH_ASSOC)
 	{
 		if (!($query instanceof PDOStatement)) {

@@ -84,6 +84,21 @@ class Sqlite3Driver extends DriverInterface {
 		return @$this->conn->exec($sql) ? $this->conn->changes() : false;
 	}
 
+	public function beginTransaction()
+	{
+		return $this->conn->exec('BEGIN');
+	}
+
+	public function commit()
+	{
+		return $this->conn->exec('COMMIT');
+	}
+
+	public function rollback()
+	{
+		return $this->conn->exec('ROLLBACK');
+	}
+
 	public function fetch($query, $fetchType=DB::FETCH_ASSOC)
 	{
 		if (!($query instanceof \SQLite3Result)) {

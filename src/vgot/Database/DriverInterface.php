@@ -48,6 +48,27 @@ abstract class DriverInterface {
 	abstract public function exec($sql);
 
 	/**
+	 * Initiates a transaction
+	 *
+	 * @return bool
+	 */
+	abstract public function beginTransaction();
+
+	/**
+	 * Commit a transaction
+	 *
+	 * @return bool
+	 */
+	abstract public function commit();
+
+	/**
+	 * Rollback a transaction
+	 *
+	 * @return bool
+	 */
+	abstract public function rollback();
+
+	/**
 	 * Fetch one row
 	 *
 	 * @param mixed $query

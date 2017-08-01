@@ -63,6 +63,21 @@ class MysqliDriver extends DriverInterface {
 		return mysqli_real_query($this->conn, $sql) ? mysqli_affected_rows($this->conn) : false;
 	}
 
+	public function beginTransaction()
+	{
+		return PHP_VERSION_ID >= 50500 ? mysqli_begin_transaction($this->conn) : mysqli_real_query($this->conn, 'BEGIN');
+	}
+
+	public function commit()
+	{
+		return mysqli_commit($this->conn);
+	}
+
+	public function rollback()
+	{
+		return mysqli_rollback($this->conn);
+	}
+
 	public function fetch($query, $fetchType=DB::FETCH_ASSOC)
 	{
 		if (!($query instanceof \mysqli_result)) {
