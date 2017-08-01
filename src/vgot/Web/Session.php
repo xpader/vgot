@@ -1,6 +1,6 @@
 <?php
 
-namespace vgot\Libraries;
+namespace vgot\Web;
 
 /**
  * Created by PhpStorm.
