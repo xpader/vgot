@@ -26,5 +26,13 @@ return [
 	 *
 	 * @var callable
 	 */
-	'set_error_handler' => null
+	'set_error_handler' => null,
+
+	/**
+	 * Set system bootstrap event
+	 *
+	 * on_boot run before router parse and controller instance.
+	 * It helpful for something no need controller, for example in error page.
+	 */
+	'on_boot' => null
 ];

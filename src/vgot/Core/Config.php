@@ -69,8 +69,6 @@ class Config
 	/**
 	 * Get an exists config
 	 *
-	 * To call this method must after static initialized.
-	 *
 	 * @param string $config Config name
 	 * @return array|null
 	 */

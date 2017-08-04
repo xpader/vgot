@@ -105,6 +105,12 @@ class Application
 			return;
 		}
 
+		//call onBoot
+		$onBoot = $this->config->get('on_boot');
+		if (is_callable($onBoot)) {
+			call_user_func($onBoot);
+		}
+
 		$uri = $this->router->parse();
 
 		//Controller not found
