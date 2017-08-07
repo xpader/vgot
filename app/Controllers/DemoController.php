@@ -8,6 +8,7 @@
 namespace app\Controllers;
 
 use vgot\Database\DB;
+use vgot\Web\Url;
 
 class DemoController extends \vgot\Core\Controller
 {
@@ -163,6 +164,11 @@ class DemoController extends \vgot\Core\Controller
 
 		var_dump($app->input->server('HTTP_USER_AGENT', 'default'));
 		var_dump($app->input->clientIp());
+	}
+
+	public function url()
+	{
+		echo Url::site(['abc/deep/def', 'hello'=>'world', 'p'=>'arams']);
 	}
 
 }

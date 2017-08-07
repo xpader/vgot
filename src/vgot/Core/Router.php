@@ -140,16 +140,23 @@ class Router
 	protected function exportURI()
 	{
 		//export the request uri
-		switch($this->routes['method']) {
+		switch($this->routes['route_method']) {
 			case 'PATH_INFO': $sourceUri = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : ''; break;
-			case 'QUERY_STRING': $sourceUri = isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : ''; break;
+			case 'QUERY_STRING':
+				if (!empty($_SERVER['QUERY_STRING'])) {
+					$end = strpos($_SERVER['QUERY_STRING'], '&');
+					$sourceUri = $end === false ? $_SERVER['QUERY_STRING'] : substr($_SERVER['QUERY_STRING'], 0, $end);
+				} else {
+					$sourceUri = '';
+				}
+				break;
 			case 'GET':
-				list($controller, $action) = $this->routes['get_params'];
+				list($controller, $action) = $this->routes['route_params'];
 				$controller = isset($_GET[$controller]) ? $_GET[$controller] : substr($this->routes['default_controller'], 0, -10);
 				$action = isset($_GET[$action]) ? $_GET[$action] : $this->routes['default_action'];
 				$sourceUri = $controller.'/'.$action;
 				break;
-			default: throw new ApplicationException('Unsupport router method: '.$this->routes['method']);
+			default: throw new ApplicationException('Unsupport route method: '.$this->routes['method']);
 		}
 
 		$sourceUri = trim($sourceUri, '/');

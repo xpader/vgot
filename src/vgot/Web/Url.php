@@ -53,9 +53,80 @@ class Url
 		}
 	}
 
-	public static function site()
+	/**
+	 * Generate a site url
+	 *
+	 * @param string|array $uri
+	 * Just uri: 'tommy/jimmy/action'
+	 * Uri with params: ['tommy/jimmy/action', 'param1'=>'value', 'param2'=>'value']
+	 * @param bool $absolute
+	 * @param bool $suffix
+	 * @return string
+	 */
+	public static function site($uri, $absolute=false, $suffix=true)
 	{
+		$app = Application::getInstance();
+		$entry = $app->config->get('entry_file');
+		$url = self::base($absolute).$entry;
+
+		if (is_array($uri)) {
+			if (isset($uri[0])) {
+				$tmp = array_shift($uri);
+				$uri && $params = $uri;
+				$uri = $tmp;
+			} else {
+				$uri = '';
+				$uri && $params = $uri;
+			}
+		}
+
+		switch($app->config->get('route_method')) {
+			case 'PATH_INFO':
+				$join = $entry ? '/' : '';
+				$uri && $url .= $join.$uri.($suffix ? $app->config->get('suffix') : '');
+				break;
+			case 'QUERY_STRING':
+				$uri && $url .= '?'.$uri.($suffix ? $app->config->get('suffix') : '');
+				break;
+			case 'GET':
+			default:
+				list($ctlName, $actName) = $app->config->get('route_params');
+				if (($spt = strrpos($uri, '/')) !== false) {
+					$controller = substr($uri, 0, $spt);
+					$action = substr($uri, $spt+1);
+					$url .= "?$ctlName=$controller&$actName=$action";
+				} elseif ($uri) {
+					$url .= "?$ctlName=$uri";
+				}
+		}
+
+		if (isset($params)) {
+			is_array($params) && $params = http_build_query($params);
+			$url .= (strrpos($url, '?') !== false ? '&' : '?').$params;
+		}
+
+		return $url;
 	}
 
+	/**
+	 * Get current url
+	 *
+	 * @param bool $absolute
+	 * @return string
+	 */
+	public static function current($absolute=false)
+	{
+		if ($absolute) {
+			$protocol = strtolower($_SERVER['SERVER_PROTOCOL']);
+			$protocol = substr($protocol, 0, strpos($protocol, '/'));
+			$port = $_SERVER['SERVER_PORT'];
+			$port = $port == 80 ? '' : ':' . $port;
+			$base = $protocol . '://' . $_SERVER['SERVER_NAME'] . $port;
+		} else {
+			$base = '';
+		}
+
+		return ($absolute ? $base : '') . $_SERVER['REQUEST_URI'];
+	}
 
 }

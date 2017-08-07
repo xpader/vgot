@@ -17,7 +17,7 @@ return [
 	 * Router base on uri params, this configure is setting what type of params use for router.
 	 * PATH_INFO, QUERY_STRING, GET
 	 */
-	'method' => 'PATH_INFO',
+	'route_method' => 'GET',
 
 	/**
 	 * Set controller and action's param name when router_method is GET.
@@ -25,7 +25,7 @@ return [
 	 * params list: [controller, action]
 	 * Get value only allow a-z0-9\-_
 	 */
-	'get_params' => ['ctl', 'act'],
+	'route_params' => ['ctl', 'act'],
 	'suffix' => '.html',
 
 	/**

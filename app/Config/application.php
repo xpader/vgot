@@ -9,6 +9,7 @@
 return [
 	'id' => 'Basic',
 	'base_url' => 'http://127.0.0.1/dev/vgot/public/',
+	'entry_file' => 'index.php',
 
 	//The providers to register
 	'providers' => [
