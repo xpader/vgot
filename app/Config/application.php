@@ -16,6 +16,7 @@ return [
 	],
 
 	//Output
+	'output_charset' => 'utf-8',
 	'output_gzip' => true,
 	'output_gzip_level' => 8,
 	'output_gzip_minlen' => 1024, //1KB

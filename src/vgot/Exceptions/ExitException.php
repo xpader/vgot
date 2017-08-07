@@ -2,13 +2,13 @@
 /**
  * Created by PhpStorm.
  * User: pader
- * Date: 17-4-24
- * Time: 上午1:49
+ * Date: 2017/8/7
+ * Time: 14:08
  */
 
 namespace vgot\Exceptions;
 
-class ApplicationException extends \Exception
+class ExitException extends \Exception
 {
 
 }

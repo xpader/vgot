@@ -8,6 +8,7 @@
 namespace vgot\Core;
 
 use vgot\Exceptions\ApplicationException;
+use vgot\Exceptions\ExitException;
 use vgot\Exceptions\HttpNotFoundException;
 
 /**
@@ -129,20 +130,24 @@ class Application
 		 * Invoke controller action
 		 * @var $instance Controller
 		 */
-		$this->controller = $instance = new $uri['controller'];
+		try {
+			$this->controller = $instance = new $uri['controller'];
 
-		if ($instance instanceof Controller === false) {
-			throw new ApplicationException($uri['controller'].' is not a controller class.');
+			if ($instance instanceof Controller === false) {
+				throw new ApplicationException($uri['controller'] . ' is not a controller class.');
+			}
+
+			$action = $this->router->findAction($instance, $uri['params']);
+
+			if ($action === false) {
+				throw new HttpNotFoundException();
+			}
+
+			$instance->init();
+			call_user_func_array([$instance, $action], $uri['params']);
+		} catch (ExitException $e) {
+			//ignore
 		}
-
-		$action = $this->router->findAction($instance, $uri['params']);
-
-		if ($action === false) {
-			throw new HttpNotFoundException();
-		}
-
-		$instance->init();
-		call_user_func_array([$instance, $action], $uri['params']);
 
 		$this->output->flush();
 	}

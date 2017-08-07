@@ -13,11 +13,17 @@ class Output
 {
 
 	protected $mode = null;
+	protected $charset = 'utf-8';
 
 	public function __construct()
 	{
 		$config = Application::getInstance()->config;
 
+		//charset
+		$charset = $config->get('output_charset');
+		$charset && $this->charset = $charset;
+
+		//gzip
 		if ($config->get('output_gzip') &&
 			($config->get('output_gzip_force_soft') || !$this->enableHardGzip())
 		) {
@@ -87,6 +93,13 @@ class Output
 	protected static function isGzipSupport()
 	{
 		return (extension_loaded('zlib') && strpos($_SERVER['HTTP_ACCEPT_ENCODING'], 'gzip') !== false);
+	}
+
+	public function json($data, $charset=null)
+	{
+		$charset = $charset ?: $this->charset;
+		header('Content-Type: application/json; charset='.$charset);
+		echo json_encode($data);
 	}
 
 }
