@@ -9,6 +9,8 @@
 namespace vgot\Core;
 
 
+use vgot\Exceptions\ApplicationException;
+
 class Router
 {
 
@@ -132,16 +134,27 @@ class Router
 	/**
 	 * Explain and translate the true uri
 	 *
-	 * @return mixed|string
+	 * @return array
+	 * @throws ApplicationException
 	 */
 	protected function exportURI()
 	{
 		//export the request uri
-		$sourceUri = isset($_SERVER['PATH_INFO']) ? trim($_SERVER['PATH_INFO'], '/') : '';
+		switch($this->routes['method']) {
+			case 'PATH_INFO': $sourceUri = isset($_SERVER['PATH_INFO']) ? $_SERVER['PATH_INFO'] : ''; break;
+			case 'QUERY_STRING': $sourceUri = isset($_SERVER['QUERY_STRING']) ? $_SERVER['QUERY_STRING'] : ''; break;
+			case 'GET':
+				list($controller, $action) = $this->routes['get_params'];
+				$controller = isset($_GET[$controller]) ? $_GET[$controller] : substr($this->routes['default_controller'], 0, -10);
+				$action = isset($_GET[$action]) ? $_GET[$action] : $this->routes['default_action'];
+				$sourceUri = $controller.'/'.$action;
+				break;
+			default: throw new ApplicationException('Unsupport router method: '.$this->routes['method']);
+		}
+
+		$sourceUri = trim($sourceUri, '/');
 
 		//translate routes
-		$realUri = $sourceUri;
-
 		if ($routes = $this->routes['route_maps']) {
 			foreach ($routes as $exp => $route) {
 				$exp = '#^'.$exp.'$#';
@@ -152,6 +165,14 @@ class Router
 					break;
 				}
 			}
+		}
+
+		!isset($realUri) && $realUri = $sourceUri;
+
+		//Remove suffix from $realUri
+		if ($this->routes['suffix']) {
+			$suffix = preg_quote($this->routes['suffix']);
+			$realUri = preg_replace("/$suffix$/",'',$realUri);
 		}
 
 		return array(
