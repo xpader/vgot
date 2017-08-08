@@ -159,27 +159,25 @@ class Router
 			default: throw new ApplicationException('Unsupport route method: '.$this->routes['method']);
 		}
 
-		$sourceUri = trim($sourceUri, '/');
+		$sourceUri = $realUri = trim($sourceUri, '/');
+
+		//Remove suffix from $realUri
+		if ($this->routes['suffix']) {
+			$suffix = preg_quote($this->routes['suffix']);
+			$realUri = preg_replace("/$suffix$/", '', $realUri);
+		}
 
 		//translate routes
 		if ($routes = $this->routes['route_maps']) {
 			foreach ($routes as $exp => $route) {
 				$exp = '#^'.$exp.'$#';
-				if (preg_match($exp, $sourceUri)) {
-					$realUri = preg_replace($exp, $route, $sourceUri);
+				if (preg_match($exp, $realUri)) {
+					$realUri = preg_replace($exp, $route, $realUri);
 					break;
 				} elseif ($sourceUri == $exp) {
 					break;
 				}
 			}
-		}
-
-		!isset($realUri) && $realUri = $sourceUri;
-
-		//Remove suffix from $realUri
-		if ($this->routes['suffix']) {
-			$suffix = preg_quote($this->routes['suffix']);
-			$realUri = preg_replace("/$suffix$/",'',$realUri);
 		}
 
 		return array(
