@@ -90,14 +90,8 @@ class Url
 				break;
 			case 'GET':
 			default:
-				list($ctlName, $actName) = $app->config->get('route_params');
-				if (($spt = strrpos($uri, '/')) !== false) {
-					$controller = substr($uri, 0, $spt);
-					$action = substr($uri, $spt+1);
-					$url .= "?$ctlName=$controller&$actName=$action";
-				} elseif ($uri) {
-					$url .= "?$ctlName=$uri";
-				}
+				$route = $app->config->get('route_param');
+				$url .= "?$route=$uri";
 		}
 
 		if (isset($params)) {

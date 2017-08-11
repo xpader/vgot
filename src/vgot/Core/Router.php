@@ -151,10 +151,8 @@ class Router
 				}
 				break;
 			case 'GET':
-				list($controller, $action) = $this->routes['route_params'];
-				$controller = isset($_GET[$controller]) ? $_GET[$controller] : substr($this->routes['default_controller'], 0, -10);
-				$action = isset($_GET[$action]) ? $_GET[$action] : $this->routes['default_action'];
-				$sourceUri = $controller.'/'.$action;
+				$route = $this->routes['route_param'];
+				$sourceUri = isset($_GET[$route]) ? $_GET[$route] : '';
 				break;
 			default: throw new ApplicationException('Unsupport route method: '.$this->routes['method']);
 		}

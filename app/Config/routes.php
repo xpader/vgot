@@ -20,12 +20,10 @@ return [
 	'route_method' => 'GET',
 
 	/**
-	 * Set controller and action's param name when router_method is GET.
-	 *
-	 * params list: [controller, action]
+	 * Set route param name when router_method is GET.
 	 * Get value only allow a-z0-9\-_
 	 */
-	'route_params' => ['ctl', 'act'],
+	'route_param' => 'uri',
 	'suffix' => '.html',
 
 	/**
