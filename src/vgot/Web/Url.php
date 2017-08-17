@@ -80,7 +80,7 @@ class Url
 			}
 		}
 
-		switch($app->config->get('route_method')) {
+		switch ($app->config->get('route_method')) {
 			case 'PATH_INFO':
 				$join = $entry ? '/' : '';
 				$uri && $url .= $join.$uri.($suffix ? $app->config->get('suffix') : '');

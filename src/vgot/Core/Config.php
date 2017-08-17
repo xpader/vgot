@@ -86,7 +86,7 @@ class Config
 	 */
 	public function get($key, $section='')
 	{
-		if (!isset($this->configs[$section])) {
+		if ($section && !isset($this->configs[$section])) {
 			$this->load($section, true);
 		}
 

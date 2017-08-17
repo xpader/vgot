@@ -146,7 +146,10 @@ class Application
 			$instance->init();
 			call_user_func_array([$instance, $action], $uri['params']);
 		} catch (ExitException $e) {
-			//ignore
+			$message = $e->getMessage();
+			if ($message) {
+				echo $message;
+			}
 		}
 
 		$this->output->flush();
