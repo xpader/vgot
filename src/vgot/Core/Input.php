@@ -163,29 +163,42 @@ class Input
 	 * @param array $gpcs
 	 * @param string $key
 	 * @param mixed $defaultValue
-	 * @param array|string $filter
+	 * @param array|callable|int $filter
 	 * @return mixed
 	 * @throws
 	 */
 	public function fetchVar(&$gpcs, $key, $defaultValue=null, $filter=null)
 	{
 		if (!isset($gpcs[$key])) return $defaultValue;
-
 		$var = $gpcs[$key];
+		if ($filter === null) return $var;
+		return $this->applyFilter($var, $filter);
+	}
 
-		if (!$filter) return $var;
-
-		if (!is_array($filter)) {
-			$filter = explode('|', $filter);
-		}
-
-		foreach ($filter as $func) {
-			if (is_callable($func)) {
-				$var = $func($var);
-			} elseif (method_exists($this, 'filter'.ucfirst($func))) {
-				$var = $this->{'filter'.ucfirst($func)}($var);
+	/**
+	 * Apply filter to var and return
+	 *
+	 * @param mixed $var
+	 * @param callable|int|array $filter Filter callable, filter_var constant and multi filter in array.
+	 * @return mixed
+	 * @see http://php.net/manual/en/function.filter-var.php
+	 * @throws ApplicationException
+	 */
+	public function applyFilter($var, $filter)
+	{
+		if (is_array($filter)) {
+			foreach ($filter as $ft) {
+				$var = $this->applyFilter($var, $ft);
+			}
+		} else {
+			if (is_callable($filter)) {
+				$var = $filter($var);
+			} elseif (is_int($filter)) {
+				$var = filter_var($var, $filter);
+			} elseif (method_exists($this, 'filter'.ucfirst($filter))) {
+				$var = $this->{'filter'.ucfirst($filter)}($var);
 			} else {
-				throw new ApplicationException("Undefined filter '$filter' for input!");
+				throw new ApplicationException("Undefined filter '$filter' for var!");
 			}
 		}
 
