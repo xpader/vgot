@@ -143,7 +143,7 @@ class Application
 				throw new HttpNotFoundException();
 			}
 
-			$instance->init();
+			$instance->__init();
 			call_user_func_array([$instance, $action], $uri['params']);
 		} catch (ExitException $e) {
 			$message = $e->getMessage();

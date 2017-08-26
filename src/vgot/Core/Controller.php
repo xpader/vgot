@@ -15,7 +15,7 @@ abstract class Controller extends Base
 	/**
 	 * Initialize after __construct, before action
 	 */
-	public function init()
+	public function __init()
 	{}
 
 	protected function render($name, $vars=null, $return=false)

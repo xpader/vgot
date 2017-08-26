@@ -17,14 +17,14 @@ return [
 	 * Router base on uri params, this configure is setting what type of params use for router.
 	 * PATH_INFO, QUERY_STRING, GET
 	 */
-	'route_method' => 'GET',
+	'route_method' => 'PATH_INFO',
 
 	/**
 	 * Set route param name when router_method is GET.
 	 * Get value only allow a-z0-9\-_
 	 */
 	'route_param' => 'uri',
-	'suffix' => '.html',
+	'suffix' => '',
 
 	/**
 	 * Set case symbol in url

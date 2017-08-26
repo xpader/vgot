@@ -86,14 +86,22 @@ class Router
 	 */
 	public function findAction($instance, &$params)
 	{
-		$action = !empty($params[0]) ? $params[0] : $this->routes['default_action'];
+		if (empty($params[0])) {
+			$action = $this->routes['default_action'];
+		} else {
+			$action = $params[0];
 
-		if ($this->routes['case_symbol']) {
-			$action = $this->camelCase($action);
+			if (substr($action, 0, 2) == '__') {
+				return false;
+			}
+
+			if ($this->routes['case_symbol']) {
+				$action = $this->camelCase($action);
+			}
 		}
 
 		if (
-			(is_callable([$instance, $action]) && $action != 'init')
+			is_callable([$instance, $action])
 			|| (($action = 'action'.ucfirst($action)) && is_callable([$instance, $action]))
 		) {
 			array_shift($params);

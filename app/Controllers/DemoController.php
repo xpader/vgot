@@ -18,6 +18,11 @@ class DemoController extends \vgot\Core\Controller
 		echo 'WhatsApp';
 	}
 
+	public function __rtest()
+	{
+		echo '123';
+	}
+
 	public function app()
 	{
 		$app = getApp();
