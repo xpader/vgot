@@ -41,6 +41,8 @@ class Sqlite3Driver extends DriverInterface {
 			return false;
 		}
 
+		isset($config['timeout']) && $this->conn->busyTimeout($config['timeout']*1000);
+
 		return true;
 	}
 

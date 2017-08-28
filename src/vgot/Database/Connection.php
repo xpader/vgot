@@ -37,7 +37,8 @@ class Connection
 
 	public function __construct($config)
 	{
-		$driverClass = '\vgot\Database\Driver\\'.ucfirst($config['driver']).'Driver';
+		$driver = isset($config['driver']) ? $config['driver'] : 'pdo';
+		$driverClass = '\vgot\Database\Driver\\'.ucfirst($driver).'Driver';
 
 		if (!class_exists($driverClass)) {
 			throw new DatabaseException("Unsupport database driver '{$config['driver']}'.");

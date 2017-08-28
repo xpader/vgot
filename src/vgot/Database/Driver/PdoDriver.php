@@ -31,17 +31,17 @@ class PdoDriver extends DriverInterface {
 			throw new DatabaseException('Must specify \'type\' when using PDO driver!');
 		}
 
+		$opt = array();
+
 		//firebird,mssql,mysql,oci,oci8,odbc,pgsql,sqlite
 		switch ($config['type']) {
 			case 'mysql':
-				$dsnp = $opt = array();
+				$dsnp = array();
 
 				$dsnp['host'] = $config['host'];
 				$dsnp['dbname'] = $config['database'];
 
 				if (isset($config['port'])) $dsnp['port'] = $config['port'];
-
-				if ($config['pconnect']) $opt[PDO::ATTR_PERSISTENT] = TRUE;
 
 				if (!empty($config['charset'])) {
 					$dsnp['charset'] = $config['charset'];
@@ -60,8 +60,6 @@ class PdoDriver extends DriverInterface {
 
 				$dsn = $config['type'].':'.join(';',$dsn);
 				$args = array($dsn, $config['username'], $config['password']);
-
-				$opt && $args[3] = $opt;
 				break;
 
 			case 'sqlite':
@@ -70,6 +68,16 @@ class PdoDriver extends DriverInterface {
 				break;
 			default:
 				throw new DatabaseException('Unable to connect database', "Not yet supported database type: '{$config['type']}'");
+		}
+
+		//Attribute setting
+		!empty($config['pconnect']) && $opt[PDO::ATTR_PERSISTENT] = TRUE;
+		isset($config['timeout']) && $opt[PDO::ATTR_TIMEOUT] = $config['timeout'];
+
+		if ($opt) {
+			!isset($args[1]) && $args[1] = null;
+			!isset($args[2]) && $args[2] = null;
+			$args[3] = $opt;
 		}
 
 		$this->type = $config['type'];
