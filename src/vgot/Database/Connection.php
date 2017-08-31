@@ -214,7 +214,7 @@ class Connection
 	 */
 	public function tableName($table)
 	{
-		return $this->config['table_prefix'].$table;
+		return empty($this->config['table_prefix']) ? $table : $this->config['table_prefix'].$table;
 	}
 
 	public function getQueryRecords()
