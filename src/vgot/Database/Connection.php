@@ -133,13 +133,35 @@ class Connection
 	}
 
 	/**
+	 * Fetch row from query result
+	 *
+	 * The different to fetchOne() is fetch() can still fetch next row from result.
+	 * That mean you can fetch all data from query result like fetchAll() but you can
+	 * do something when fetch each row.
+	 * If you only want to get one row, use fetchOne().
+	 *
+	 * @param int $fetchType
+	 * @return array|false
+	 */
+	public function fetch($fetchType=DB::FETCH_ASSOC)
+	{
+		$result = $this->di->fetch($this->lastQuery, $fetchType);
+
+		if ($result === false) {
+			$this->lastQuery = null;
+		}
+
+		return $result;
+	}
+
+	/**
 	 * Fetch one row from query result
 	 *
 	 * @param int $fetchType
 	 * @return array|null
 	 * @throws DatabaseException
 	 */
-	public function fetch($fetchType=DB::FETCH_ASSOC)
+	public function get($fetchType=DB::FETCH_ASSOC)
 	{
 		$result = $this->di->fetch($this->lastQuery, $fetchType);
 

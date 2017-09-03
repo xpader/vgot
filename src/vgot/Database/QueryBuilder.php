@@ -218,11 +218,18 @@ class QueryBuilder extends Connection {
 		return $sql;
 	}
 
-	//Fetch one row from query result
+	//Fetch row from query result
 	public function fetch($fetchType=DB::FETCH_ASSOC)
 	{
 		$this->prepareQuery();
 		return parent::fetch($fetchType);
+	}
+
+	//Fetch one row from query result
+	public function get($fetchType=DB::FETCH_ASSOC)
+	{
+		$this->prepareQuery();
+		return parent::get($fetchType);
 	}
 
 	//Fetch all rows from query result
