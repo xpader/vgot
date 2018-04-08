@@ -26,7 +26,7 @@ class MysqliDriver extends DriverInterface {
 			return false;
 		}
 
-		isset($conn['timeout']) && mysqli_options($conn, MYSQLI_OPT_CONNECT_TIMEOUT, $config['timeout']);
+		isset($config['timeout']) && mysqli_options($conn, MYSQLI_OPT_CONNECT_TIMEOUT, $config['timeout']);
 
 		$this->conn = $conn;
 		return true;
