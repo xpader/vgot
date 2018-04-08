@@ -14,7 +14,10 @@ ini_set('display_errors', 'On');
 ini_set('error_reporting', E_ALL);
 
 require BASE_PATH.'/framework/Boot.php';
-require BASE_PATH.'/vendor/autoload.php';
+
+if (is_file(BASE_PATH . '/vendor/autoload.php')) {
+	require BASE_PATH . '/vendor/autoload.php';
+}
 
 Boot::addNamespaces([
 	'app' => BASE_PATH.'/app',

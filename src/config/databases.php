@@ -26,7 +26,7 @@ return [
 		'debug' => true
 	],
 	'sqlite' => [
-		'filename' => BASE_PATH.'/public/test.db',
+		'filename' => BASE_PATH.'/resource/test.db',
 		'driver' => 'sqlite3',
 		/**
 		 * Optional flags used to determine how to open the SQLite database
