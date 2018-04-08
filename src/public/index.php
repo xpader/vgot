@@ -13,7 +13,7 @@ define('BASE_PATH', realpath(__DIR__.'/..')); //constant only for app
 ini_set('display_errors', 'On');
 ini_set('error_reporting', E_ALL);
 
-require BASE_PATH.'/src/vgot/Boot.php';
+require BASE_PATH.'/framework/Boot.php';
 require BASE_PATH.'/vendor/autoload.php';
 
 Boot::addNamespaces([
@@ -24,8 +24,8 @@ Boot::addNamespaces([
 
 Boot::systemConfig([
 	'controller_namespace' => '\app\Controllers',
-	'config_path' => BASE_PATH.'/app/Config',
-	'views_path' => BASE_PATH.'/app/Views',
+	'config_path' => BASE_PATH.'/config',
+	'views_path' => BASE_PATH.'/views',
 	'common_config_path' => null,
 	'common_views_path' => null,
 ]);
