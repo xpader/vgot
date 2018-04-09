@@ -144,10 +144,12 @@ class FileCache extends Cache {
 		$gcr = function($path) use (&$gcr, $now) {
 			if (($handle = opendir($path)) !== false) {
 				while (($file = readdir($handle)) !== false) {
-					if ($file == '.' || $file == '..') {
+					if ($file == '.' || $file == '..' || substr($file, 0, 1) == '.') {
 						continue;
 					}
+
 					$fullPath = $path . DIRECTORY_SEPARATOR . $file;
+
 					if (is_dir($fullPath)) {
 						$gcr($fullPath);
 						@rmdir($fullPath);
