@@ -99,8 +99,7 @@ class FileCache extends Cache {
 
 		if (@file_put_contents($file, $content, LOCK_EX) === false) {
 			$error = error_get_last();
-			throw new ApplicationException('Unable to create cache directory: '.$error['message']);
-			//return false;
+			throw new ApplicationException('Unable to write cache file: '.$error['message']);
 		}
 
 		$this->cacheInMemory && $this->_cache[$key] = $data;
