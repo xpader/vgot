@@ -22,7 +22,9 @@ class DbCache extends Cache {
 	public function __construct($config=[])
 	{
 		configClass($this, $config);
-		$this->db = DB::connection($this->connection);
+
+		//To use DbCache, the db connection must use query_builder.
+		$this->db = DB::connection($this->connection, true);
 		$this->tableName = $this->db->tableName($this->table);
 		$this->maxKeyLength = 64;
 		$this->keyPrefix = null;
@@ -31,8 +33,7 @@ class DbCache extends Cache {
 	public function get($key, $defaultValue=null)
 	{
 		$pk = $this->buildKey($key);
-		$data = $this->db->query("SELECT `value`,`expired_at` FROM {$this->tableName} WHERE `key`="
-			.$this->db->quote($pk))->fetch();
+		$data = $this->db->select('value,expired_at')->from($this->tableName)->where(['key'=>$pk])->fetch();
 
 		if ($data) {
 			$now = time();
@@ -54,14 +55,13 @@ class DbCache extends Cache {
 		$value = serialize($value);
 		$expiredAt = $duration == 0 ? $duration : $now + $duration;
 
-		return (bool)$this->db->exec("REPLACE INTO {$this->tableName} SET `key`=".$this->db->quote($pk).",`value`="
-			.$this->db->quote($value).",`expired_at`=".$this->db->quote($expiredAt));
+		return (bool)$this->db->insert($this->tableName, ['key'=>$pk, 'value'=>$value, 'expired_at'=>$expiredAt], true);
 	}
 
 	public function delete($key)
 	{
 		$pk = $this->buildKey($key);
-		return (bool)$this->db->exec("DELETE FROM {$this->tableName} WHERE `key`=".$this->db->quote($pk));
+		return (bool)$this->db->where(['key'=>$pk])->delete($this->tableName);
 	}
 
 	/**
@@ -74,7 +74,7 @@ class DbCache extends Cache {
 	{
 		if ($force || mt_rand(0, 1000000) < $this->gcProbability) {
 			$expire = time();
-			$this->db->exec("DELETE FROM {$this->tableName} WHERE `expired_at` BETWEEN 1 AND $expire");
+			$this->db->where(['expired_at between'=>[1, $expire]])->delete($this->tableName);
 		}
 	}
 

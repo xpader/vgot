@@ -27,14 +27,14 @@ class DB
 	 * @param string $index
 	 * @param bool $queryBuilder Use query builder mode
 	 * @return Connection|QueryBuilder
-	 * @throws DatabaseException|ApplicationException
+	 * @throws DatabaseException
 	 */
 	public static function connection($index=null, $queryBuilder=null)
 	{
 		if ($index === null) {
 			$index = Application::getInstance()->config->get('default_connection', 'databases');
 		} elseif ($index == 'default_connection') {
-			throw new ApplicationException('Not allow use system index \'default_connection\' to conneciton database.');
+			throw new DatabaseException("Unexcept database index '$index'.");
 		}
 
 		if (!isset(self::$connections[$index])) {
@@ -48,9 +48,13 @@ class DB
 				$queryBuilder = $config['query_builder'];
 			}
 
-			$conn = $queryBuilder ? new QueryBuilder($config) :  new Connection($config);
+			$conn = $queryBuilder ? new QueryBuilder($config) : new Connection($config);
 
 			self::$connections[$index] = $conn;
+		}
+
+		if ($queryBuilder && self::$connections[$index] instanceof QueryBuilder === false) {
+			throw new DatabaseException('Can not get QueryBuilder connection after none QueryBuilder instance.');
 		}
 
 		return self::$connections[$index];

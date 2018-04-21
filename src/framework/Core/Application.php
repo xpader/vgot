@@ -22,6 +22,7 @@ use vgot\Exceptions\HttpNotFoundException;
  * @property Controller $controller
  * @property \vgot\Database\Connection|\vgot\Database\QueryBuilder $db
  * @property \vgot\Cache\Cache $cache
+ * @property \vgot\Web\Session $session
  */
 class Application
 {
@@ -30,7 +31,7 @@ class Application
 	 * Default providers
 	 * @var array
 	 */
-	protected $_define = [
+	protected $_providers = [
 		'db' => 'vgot\Database\DB::connection'
 	];
 
@@ -45,34 +46,53 @@ class Application
 		$this->output = new Output();
 		$this->router = new Router($archPath['controller_namespace']);
 
-		$this->_define['view'] = [
-			'vgot\Core\View',
-			[$archPath['views_path'], $archPath['common_views_path']]
+		$this->_providers['view'] = [
+			'class' => 'vgot\Core\View',
+			'arguments' => [$archPath['views_path'], $archPath['common_views_path']]
 		];
 	}
 
 	public function __get($name)
 	{
-		if (!isset($this->_define[$name])) {
+		if (!isset($this->_providers[$name])) {
 			throw new \ErrorException("Undefined application property '$name'.");
 		}
 
-		$def = $this->_define[$name];
+		$provider = $this->_providers[$name];
+		$class = $call = $args = $props = false;
 
-		if (is_array($def)) {
-			$call = $def[0];
-			$args = isset($def[1]) ? $def[1] : null;
+		if (is_array($provider)) {
+			if (isset($provider['class'])) {
+				$class = $provider['class'];
+			} elseif (isset($provider['callable'])) {
+				$call = $provider['callable'];
+			} else {
+				throw new ApplicationException("Can not resolve provider '$name', provider must contain 'class' or 'callable' element.");
+			}
+
+			isset($provider['arguments']) && $args = $provider['arguments'];
+			isset($provider['propertys']) && $props = $provider['propertys'];
+
+		} elseif (is_string($provider) && class_exists($provider)) {
+			$class = $provider;
+		} elseif (is_callable($provider)) {
+			$call = $provider;
+		} elseif (is_object($provider)) {
+			return $this->$name = $provider;
 		} else {
-			$call = $def;
-			$args = null;
+			throw new ApplicationException("Can not resolve provider '$name'.");
 		}
 
-		if (is_string($call) && class_exists($call)) {
-			$this->$name = $args === null ? new $call() : (new \ReflectionClass($call))->newInstanceArgs($args);
-		} elseif (is_callable($call)) {
-			$this->$name = $args === null ? call_user_func($call) : call_user_func_array($call, $args);
+		if ($class) {
+			$this->$name = $args ? (new \ReflectionClass($class))->newInstanceArgs($args) : new $class;
+
+			if (is_array($props)) {
+				foreach ($props as $k => $v) {
+					$this->$name->$k = $v;
+				}
+			}
 		} else {
-			throw new ApplicationException("Wrong format registered object '$name' to call.");
+			$this->$name = $args ? call_user_func_array($call, $args) : call_user_func($call);
 		}
 
 		return $this->$name;
@@ -123,7 +143,7 @@ class Application
 		$providers = $this->config->get('providers');
 
 		if (is_array($providers) && $providers) {
-			$this->_define = array_merge($this->_define, $providers);
+			$this->_providers = array_merge($this->_providers, $providers);
 		}
 
 		/**
@@ -156,26 +176,29 @@ class Application
 	}
 
 	/**
-	 * Register object to application
+	 * Register provider
 	 *
 	 * @param string $name
-	 * @param Object|string|array $object Object, class name to instance or callable to set return value.
-	 * @param array $args Arguments for instance class or callable.
+	 * @param Object|string|callable $struct Object, class name to instance or callable to set return value.
 	 * @throws ApplicationException
 	 */
-	public function register($name, $object, $args=null)
+	public function register($name, $struct)
 	{
 		if (isset($this->$name)) {
-			throw new ApplicationException("Can not register object because name '$name' exists in instance.");
+			throw new ApplicationException("Register provider name '$name' is already exists in application.");
 		}
 
-		if (is_object($object)) {
-			$this->$name = $object;
-		} elseif ($args === null) {
-			$this->_define[$name] = is_array($object) ? [$object] : $object;
-		} else {
-			$this->_define[$name] = [$object, $args];
+		if (is_object($struct)) {
+			$this->$name = $struct;
+		} elseif (is_array($struct)) {
+			if (!isset($struct['class']) && !isset($struct['callable'])) {
+				throw new ApplicationException("Register provider '$name' must contain 'class' or 'callable' element.");
+			}
+		} elseif (!is_callable($struct, true)) {
+			throw new ApplicationException("Unexpected register provider '$name' type '".gettype($struct)."'.");
 		}
+
+		$this->_providers[$name] = $struct;
 	}
 
 	/**

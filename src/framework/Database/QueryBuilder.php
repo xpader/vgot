@@ -451,7 +451,7 @@ class QueryBuilder extends Connection {
 		if (is_array($keys)) {
 			$qk = array();
 			foreach($keys as $key) {
-				$qk[] = $this->quoteKeys($key);
+				$qk[] = $this->quoteKeys($key, true);
 			}
 			return join(', ', $qk);
 		}

@@ -13,7 +13,30 @@ return [
 
 	//The providers to register
 	'providers' => [
-		'security' => ['vgot\Core\Security', ['test']]
+		'security' => [
+			'class' => 'vgot\Core\Security',
+			'arguments' => ['test'],
+			'propertys' => ['']
+		],
+		'cache' => [
+			'class' => 'vgot\Cache\FileCache',
+			'arguments' => [
+				[
+					'stor_dir' => BASE_PATH.'/resource/cache',
+					'cache_in_memory' => true,
+					'dir_level' => 2
+				]
+			]
+		],
+		'session' => [
+			'class' => 'vgot\Web\Session',
+			'arguments' => [
+				[
+					'lifetime' => 86400,
+					'handler' => 'cache'
+				]
+			]
+		]
 	],
 
 	//Output
