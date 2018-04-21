@@ -32,8 +32,12 @@ return [
 			'class' => 'vgot\Web\Session',
 			'arguments' => [
 				[
-					'lifetime' => 86400,
-					'handler' => 'cache'
+					'name' => 'vgotsid',
+					'cookie_httponly' => true,
+					'lifetime' => 864001,
+					'handler' => 'db',
+					'save_path' => 'db/sessions',
+					//'save_path' => 'cache/sess'
 				]
 			]
 		]
