@@ -8,8 +8,6 @@
 
 namespace app\Controllers\Test;
 
-use vgot\Web\Session;
-
 class SessionController extends \vgot\Core\Controller
 {
 
@@ -17,7 +15,7 @@ class SessionController extends \vgot\Core\Controller
 	{
 		parent::__init();
 
-		getApp()->session->start();
+		//getApp()->session->start();
 	}
 
 	public function index()

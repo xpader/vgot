@@ -132,7 +132,7 @@ class FileCache extends Cache {
 	 */
 	public function gc($force=false)
 	{
-		if (!$force && !(mt_rand(0, 1000000) < $this->gcProbability)) {
+		if (!$force && mt_rand(0, 1000000) >= $this->gcProbability) {
 			return;
 		}
 
