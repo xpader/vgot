@@ -6,7 +6,7 @@
  * Time: 19:43
  */
 
-namespace app\Controllers\Test;
+namespace app\Controllers\Example;
 
 class SessionController extends \vgot\Core\Controller
 {
