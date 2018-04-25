@@ -35,9 +35,9 @@ return [
 					'name' => 'vgotsid',
 					'cookie_httponly' => true,
 					'lifetime' => 864001,
-					'handler' => 'db',
-					'save_path' => 'db/sessions',
-					//'save_path' => 'cache/sess'
+					'handler' => 'cache',
+					//'save_path' => 'db/sessions',
+					'save_path' => 'cache/sess'
 				]
 			]
 		]

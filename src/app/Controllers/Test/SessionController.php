@@ -17,10 +17,6 @@ class SessionController extends \vgot\Core\Controller
 	{
 		parent::__init();
 
-		getApp()->register('dbcache', [
-			'class' => 'vgot\Cache\DbCache'
-		]);
-
 		getApp()->session->start();
 	}
 
@@ -34,7 +30,9 @@ class SessionController extends \vgot\Core\Controller
 
 		//session_destroy();
 
-		//print_r($_SESSION);
+		//unset($_SESSION['test']);
+
+		print_r($_SESSION);
 	}
 
 }

@@ -121,8 +121,6 @@ class FileCache extends Cache {
 			unset($this->_cache[$key]);
 		}
 
-		$this->deleteFile($file);
-
 		return true;
 	}
 
