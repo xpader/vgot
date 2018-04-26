@@ -117,8 +117,6 @@ class Uploader {
 			return false;
 		}
 
-		$a = current($this->files);
-		var_dump(key($this->files));
 		if (current($this->files)) {
 			$this->current = key($this->files);
 			next($this->files);
@@ -215,7 +213,7 @@ class Uploader {
 			'extension' => $ext,
 			'filename' => $file['name'],
 			'size' => $file['size'],
-			'realpath' => realpath($savePath),
+			'realpath' => $savePath,
 			'savename' => $filename
 		];
 
@@ -249,7 +247,7 @@ class Uploader {
 			'extension' =>  isset($pathinfo['extension']) ? strtolower($pathinfo['extension']) : '',
 			'filename' => $file['name'],
 			'size' => $file['size'],
-			'realpath' => realpath($dest),
+			'realpath' => $dest,
 			'savename' => $pathinfo['basename']
 		];
 
@@ -303,7 +301,17 @@ class Uploader {
 						$arr[$i][$k] = $list[$i];
 					}
 				}
-				$this->files = $arr;
+
+				//ignore no file input
+				$arr2 = [];
+				foreach ($arr as $i => $file) {
+					if ($file['error'] == UPLOAD_ERR_NO_FILE) {
+						continue;
+					}
+					$arr2[$i]  = $file;
+				}
+
+				$this->files = $arr2;
 			} else {
 				$this->files = [$files];
 			}

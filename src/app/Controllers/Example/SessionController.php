@@ -21,10 +21,12 @@ class SessionController extends \vgot\Core\Controller
 	public function index()
 	{
 		$app = getApp();
-		$_SESSION['ello'] = 'test';
+		// $_SESSION['ello'] = 'test';
 
-		$app->session->set('test', str_repeat(uniqid(), 100));
-		$_SESSION['time'] = time();
+		// $app->session->set('test', str_repeat(uniqid(), 100));
+		// $_SESSION['time'] = time();
+
+		print_r($_SESSION);
 
 		//session_destroy();
 
