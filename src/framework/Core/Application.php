@@ -23,6 +23,7 @@ use vgot\Exceptions\HttpNotFoundException;
  * @property \vgot\Database\Connection|\vgot\Database\QueryBuilder $db
  * @property \vgot\Cache\Cache $cache
  * @property \vgot\Web\Session $session
+ * @property \vgot\Core\Security $security
  */
 class Application
 {

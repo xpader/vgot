@@ -182,6 +182,17 @@ class Connection
 	}
 
 	/**
+	 * Return first column value in row
+	 *
+	 * @return mixed
+	 */
+	public function value()
+	{
+		$row = $this->get(DB::FETCH_NUM);
+		return $row[0];
+	}
+
+	/**
 	 * Set key for fetchAll() return array
 	 *
 	 * @param string $key
