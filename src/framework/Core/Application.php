@@ -42,14 +42,22 @@ class Application
 		self::$instance = $this;
 
 		$this->config = new Config($archPath['config_path'], $archPath['common_config_path']);
-		$this->input = new Input();
-		$this->output = new Output();
-		$this->router = new Router($archPath['controller_namespace']);
 
 		$this->_providers['view'] = [
 			'class' => 'vgot\Core\View',
 			'arguments' => [$archPath['views_path'], $archPath['common_views_path']]
 		];
+
+		//set config providers
+		$providers = $this->config->get('providers');
+
+		if (is_array($providers) && $providers) {
+			$this->_providers = array_merge($this->_providers, $providers);
+		}
+
+		$this->input = new Input();
+		$this->output = new Output();
+		$this->router = new Router($archPath['controller_namespace']);
 	}
 
 	public function __get($name)
@@ -133,13 +141,6 @@ class Application
 			throw new HttpNotFoundException();
 		}
 
-		//set config providers
-		$providers = $this->config->get('providers');
-
-		if (is_array($providers) && $providers) {
-			$this->_providers = array_merge($this->_providers, $providers);
-		}
-
 		//call onBoot
 		$onBoot = $this->config->get('on_boot');
 		if (is_callable($onBoot)) {
@@ -158,6 +159,7 @@ class Application
 			}
 
 			$action = $this->router->findAction($instance, $uri['params']);
+
 
 			if ($action === false) {
 				throw new HttpNotFoundException();
