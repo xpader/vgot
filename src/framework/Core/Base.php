@@ -11,10 +11,14 @@ namespace vgot\Core;
 /**
  * Vgot Base
  *
- * @property Router $router
  * @property Config $config
+ * @property Input $input
  * @property Output $output
+ * @property Router $router
  * @property View $view
+ * @property \vgot\Database\Connection|\vgot\Database\QueryBuilder $db
+ * @property \vgot\Cache\Cache $cache
+ * @property \vgot\Web\Session $session
  */
 abstract class Base
 {

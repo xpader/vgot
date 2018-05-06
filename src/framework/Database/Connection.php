@@ -31,6 +31,13 @@ class Connection
 
 	protected $config;
 
+	/**
+	 * Set fetchAll() return array index is used by special result key
+	 *
+	 * @var string
+	 */
+	protected $indexBy;
+
 	protected $lastQuery = null;
 
 	protected $queryRecords = [];
@@ -135,7 +142,7 @@ class Connection
 	/**
 	 * Fetch row from query result
 	 *
-	 * The different to fetchOne() is fetch() can still fetch next row from result.
+	 * The is different with get(), fetch() can still fetch next row from result.
 	 * That mean you can fetch all data from query result like fetchAll() but you can
 	 * do something when fetch each row.
 	 * If you only want to get one row, use fetchOne().
@@ -175,6 +182,18 @@ class Connection
 	}
 
 	/**
+	 * Set key for fetchAll() return array
+	 *
+	 * @param string $key
+	 * @return $this
+	 */
+	public function indexBy($key)
+	{
+		$this->indexBy = $key;
+		return $this;
+	}
+
+	/**
 	 * Fetch all rows from query result
 	 *
 	 * @param int $fetchType
@@ -184,12 +203,26 @@ class Connection
 	public function fetchAll($fetchType=DB::FETCH_ASSOC)
 	{
 		$result = $this->di->fetchAll($this->lastQuery, $fetchType);
+		$this->lastQuery = null;
+
+		//index by
+		if ($this->indexBy && $result) {
+			$arr = [];
+
+			foreach ($result as $row) {
+				if (!isset($row[$this->indexBy])) {
+					throw new DatabaseException("Undefined indexBy key '{$this->indexBy}'.");
+				}
+				$arr[$row[$this->indexBy]] = $row;
+			}
+
+			$this->indexBy = null;
+			return $arr;
+		}
 
 		if ($result === false) {
 			throw new DatabaseException("Fetch not a query result.");
 		}
-
-		$this->lastQuery = null;
 
 		return $result;
 	}
