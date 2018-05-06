@@ -600,7 +600,7 @@ class QueryBuilder extends Connection {
 				if (is_int($key)) {
 					if (is_array($val)) {
 						$sql = $this->parseWhere($val);
-						!$poly && count($val) > 1 && $poly = true;
+						count($val) > 1 && $poly = true;
 					} else {
 						$sql = $val;
 					}
@@ -619,50 +619,56 @@ class QueryBuilder extends Connection {
 		}
 
 		$where = $this->trim($where);
-		$pos = strpos($where, ' ');
 
-		if ($pos === false) {
-			$key = $this->quoteKeys($where);
-			if (!is_array($value)) {
-				return $key.'='.$this->quote($value);
-			} else {
-				return $key.(count($value) > 1 ? ' IN('.$this->quoteValues($value).')' : '='.$this->quote($value[0]));
-			}
+		if (($pos = strpos($where, ' ')) === false) {
+			$key = $where;
+			$cond = '';
 		} else {
-			$key = $this->quoteKeys(substr($where, 0, $pos));
+			$key = substr($where, 0, $pos);
 			$cond = strtoupper(substr($where, $pos+1));
+		}
 
-			//support ! mean !=, !IN mean NOT IN, and !EXISTS mean NOT EXISTS
-			if ($cond == '!') {
-				$cond = '!=';
-			} elseif (substr($cond, 0, 1) == '!') {
-				$cond = substr_replace($cond, 'NOT ', 0, 1);
+		$key = $this->quoteKeys($key);
+
+		if ($cond == '' || $cond == '!') {
+			if (is_array($value) && count($value) == 1) {
+				$value = $value[0];
 			}
+			$cond = !is_array($value) ? ($cond == '' ? '=' : '!=') : ($cond == '' ? 'IN' : 'NOT IN');
+		}
 
-			switch ($cond) {
-				case 'LIKE':
-				case 'NOT LIKE':
-					return $key.' '.$cond.' '.$this->quote($value);
-					break;
+		switch ($cond) {
+			case '=':
+			case '!=':
+			case '>':
+			case '>=':
+			case '<':
+			case '<=':
+			case '<>':
+				return $key.$cond.$this->quote($value);
+				break;
 
-				case 'EXISTS':
-				case 'NOT EXISTS':
-					return $key.' '.$cond.'('.$value.')';
-					break;
+			case 'IN':
+			case 'NOT IN':
+				return "$key $cond(".$this->quoteValues($value).')';
+				break;
 
-				case 'BETWEEN':
-					is_numeric($value[0]) || $value[0] = $this->quote($value[0]);
-					is_numeric($value[1]) || $value[1] = $this->quote($value[1]);
-					return "$key BETWEEN {$value[0]} AND {$value[1]}";
-					break;
+			case 'EXISTS':
+			case 'NOT EXISTS':
+				return $key.' '.$cond.'('.$value.')';
+				break;
 
-				default:
-					if (preg_match('/^\w+$/i', $cond)) {
-						$cond = ' '.$cond.' ';
-					}
-					return $key.$cond.$this->quoteValues($value);
-			}
+			case 'BETWEEN':
+				is_numeric($value[0]) || $value[0] = $this->quote($value[0]);
+				is_numeric($value[1]) || $value[1] = $this->quote($value[1]);
+				return "$key BETWEEN {$value[0]} AND {$value[1]}";
+				break;
 
+			default:
+				if (preg_match('/^\w+$/i', $cond)) {
+					$cond = ' '.$cond.' ';
+				}
+				return $key.$cond.$this->quoteValues($value);
 		}
 	}
 
