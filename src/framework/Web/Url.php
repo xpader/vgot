@@ -123,4 +123,27 @@ class Url
 		return ($absolute ? $base : '') . $_SERVER['REQUEST_URI'];
 	}
 
+	/**
+	 * Header Redirect
+	 *
+	 * Fast to goto an url
+	 *
+	 * @param string $uri
+	 * @param string $method location or refresh
+	 * @param int $httpResponseCode
+	 * @return void
+	 */
+	public static function redirect($uri='', $method='location', $httpResponseCode=302) {
+		if (!preg_match('#^https?://#i', $uri)) {
+			$uri = self::site($uri);
+		}
+
+		switch($method) {
+			case 'refresh': header('Refresh:0;url='.$uri); break;
+			default: header('Location: '.$uri, TRUE, $httpResponseCode);
+		}
+
+		exit;
+	}
+
 }
