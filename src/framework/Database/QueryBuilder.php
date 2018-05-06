@@ -619,8 +619,16 @@ class QueryBuilder extends Connection {
 		}
 
 		$where = $this->trim($where);
+		$pos = strpos($where, ' ');
 
-		if ($pos = strpos($where, ' ')) {
+		if ($pos === false) {
+			$key = $this->quoteKeys($where);
+			if (!is_array($value)) {
+				return $key.'='.$this->quote($value);
+			} else {
+				return $key.(count($value) > 1 ? ' IN('.$this->quoteValues($value).')' : '='.$this->quote($value[0]));
+			}
+		} else {
 			$key = $this->quoteKeys(substr($where, 0, $pos));
 			$cond = strtoupper(substr($where, $pos+1));
 
@@ -632,11 +640,6 @@ class QueryBuilder extends Connection {
 			}
 
 			switch ($cond) {
-				case 'IN':
-				case 'NOT IN':
-					return $key.' '.$cond.'('.$this->quoteValues($value).')';
-					break;
-
 				case 'LIKE':
 				case 'NOT LIKE':
 					return $key.' '.$cond.' '.$this->quote($value);
@@ -660,8 +663,6 @@ class QueryBuilder extends Connection {
 					return $key.$cond.$this->quoteValues($value);
 			}
 
-		} else {
-			return $this->quoteKeys($where).'='.$this->quote($value);
 		}
 	}
 
