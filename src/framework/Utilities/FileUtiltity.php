@@ -8,7 +8,7 @@
 
 namespace vgot\Utilities;
 
-class File
+class FileUtiltity
 {
 
 	public static function formatSize($filesize)
@@ -17,7 +17,7 @@ class File
 
 		if ($filesize) {
 			$i = floor(log($filesize, 1024));
-			return number_format($filesize/pow(1024, $i), 2, '.', ''). $units[$i];
+			return number_format($filesize/pow(1024, $i), 2, '.', '').' '.$units[$i];
 		} else {
 			return '0 Bytes';
 		}
