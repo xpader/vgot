@@ -182,8 +182,8 @@ class FileCache extends Cache {
 
 		$path .= str_replace(['?', '*', ' ', '$', '&', '\\', '/', '.'], '_', $key);
 
-		if (strlen($path) > 60) {
-			$path = substr($path, 0, 60);
+		if (strlen($path) > 128) {
+			$path = substr($path, 0, 128);
 		}
 
 		return $this->storDir.DIRECTORY_SEPARATOR.$path.'.php';
