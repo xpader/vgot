@@ -16,7 +16,7 @@ use vgot\Exceptions\ApplicationException;
 Create table using (for MySQL):
 
 CREATE TABLE `sessions` (
-  `id` varchar(128) NOT NULL,
+  `sid` varchar(128) NOT NULL,
   `data` blob NOT NULL,
   `ip_address` varchar(45) NOT NULL,
   `timestamp` int(10) UNSIGNED NOT NULL DEFAULT '0',
@@ -45,7 +45,7 @@ class DbHandler implements \SessionHandlerInterface
 
 	public function destroy($sid)
 	{
-		$this->db->where(['id'=>$sid])->delete($this->table);
+		$this->db->where(['sid'=>$sid])->delete($this->table);
 		return true;
 	}
 
@@ -78,13 +78,13 @@ class DbHandler implements \SessionHandlerInterface
 
 	public function read($sid)
 	{
-		$data = $this->db->select('data')->from($this->table)->where(['id'=>$sid])->fetchColumn();
+		$data = $this->db->select('data')->from($this->table)->where(['sid'=>$sid])->fetchColumn();
 		return $data ?: '';
 	}
 
 	public function write($sid, $sessionData)
 	{
-		return (bool)$this->db->insert($this->table, ['id'=>$sid, 'data'=>$sessionData,
+		return (bool)$this->db->insert($this->table, ['sid'=>$sid, 'data'=>$sessionData,
 			'timestamp'=>time(), 'ip_address'=>getApp()->input->clientIp()], true);
 	}
 

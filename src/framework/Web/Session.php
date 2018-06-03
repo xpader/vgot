@@ -33,9 +33,15 @@ class Session
 	public $cookieDomain;
 	public $cookieSecure = false;
 	public $cookieHttponly = false;
+	public $serializeHandler = null;
 
 	protected $started = false;
 
+	/**
+	 * Session constructor.
+	 * @param array $config
+	 * @throws ApplicationException
+	 */
 	public function __construct($config=[])
 	{
 		configClass($this, $config);
@@ -64,6 +70,10 @@ class Session
 			}
 
 			session_set_save_handler(new $handlerClass(), true);
+		}
+
+		if ($this->serializeHandler) {
+			ini_set('session.serialize_handler', $this->serializeHandler);
 		}
 
 		$this->start();
