@@ -58,7 +58,7 @@ class DemoController extends \vgot\Core\Controller
 		//$result = $db->offset(1)->limit(1)->fetchAll();
 		//print_r($result);
 
-		$result = $db->from('text')->alias('t')->orderBy(['id'=>SORT_DESC])->limit(2,1)->fetchAll();
+		$result = $db->from('text')->alias('t')->orderBy(['id'=>SORT_DESC])->limit(1, 2)->fetchAll();
 		print_r($result);
 
 		$result = $db->select('  min ( id ) as min_id , sum(t.id ) as sum, max( id) max_id')->from('text')->alias('t')->fetch();

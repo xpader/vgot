@@ -91,19 +91,14 @@ class QueryBuilder extends Connection {
 	/**
 	 * Limit
 	 *
-	 * @param int $num Limit or offset when $limit is null
 	 * @param int $limit
+	 * @param int $offset
 	 * @return self
 	 */
-	public function limit($num, $limit=null)
+	public function limit($limit, $offset=null)
 	{
-		if ($limit !== null) {
-			$this->builder['limit'] = $limit;
-			$this->builder['offset'] = $num;
-		} else {
-			$this->builder['limit'] = $num;
-		}
-
+		$this->builder['limit'] = $limit;
+		$offset !== null && $this->builder['offset'] = $offset;
 		return $this;
 	}
 
