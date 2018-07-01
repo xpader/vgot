@@ -56,6 +56,9 @@ class ArrayUtiltity
 			case 'boolean':
 				$code = $var ? 'true' : 'false';
 				break;
+			case 'NULL':
+				$code = 'null';
+				break;
 			default:
 				$code = $var;
 		}

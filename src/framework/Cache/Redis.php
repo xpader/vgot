@@ -59,11 +59,11 @@ class Redis extends Cache {
 			$func = $this->pconnect ? 'pconnect' : 'connect';
 
 			if (!@$obj->$func($this->host, $this->port)) {
-				throw new ApplicationException("Connect to redis server failed! Check the network, firewall or server status.");
+				throw new ApplicationException("Connect to redis server failed!");
 			}
 
 			if ($this->password && !$obj->auth($this->password)) {
-				throw new ApplicationException("Authenticate the redis connection failed! Check the password.");
+				throw new ApplicationException("Authenticate the redis connection failed!");
 			}
 
 			if ($this->database !== null) {
