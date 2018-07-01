@@ -24,7 +24,7 @@ class SessionController extends \vgot\Core\Controller
 
 		//echo $session->get('time');
 		// $_SESSION['ello'] = '来点中文怎么样';
-		// $_SESSION['test'] = str_repeat(uniqid(), 100);
+		 //$_SESSION['test'] = str_repeat(uniqid(), 100);
 		// $_SESSION['time'] = time();
 
 		print_r($_SESSION);

@@ -8,6 +8,7 @@
 namespace vgot\Cache;
 
 use vgot\Exceptions\ApplicationException;
+use vgot\Utilities\ArrayUtiltity;
 
 /**
  * File for Cache
@@ -87,7 +88,7 @@ class FileCache extends Cache {
 			'expired_at' => $duration == 0 ? $duration : $now + $duration
 		];
 
-		$content = '<?php return '.$this->varExport($data).';';
+		$content = '<?php return '.ArrayUtiltity::export($data, true).';';
 
 		if (!is_file($file)) {
 			$dir = dirname($file);
@@ -187,39 +188,6 @@ class FileCache extends Cache {
 		}
 
 		return $this->storDir.DIRECTORY_SEPARATOR.$path.'.php';
-	}
-
-	protected function varExport($var, $level=0)
-	{
-		switch (gettype($var)) {
-			case 'array':
-				$tabEnd = str_repeat("\t", $level);
-				$tab = $tabEnd."\t";
-				$code = "[\r\n";
-
-				foreach ($var as $key => $val) {
-					is_string($key) && $key = "'$key'";
-					if (is_array($val)) {
-						$code .= $tab.$key.' => '.$this->varExport($val, $level + 1);
-					} else {
-						$code .= $tab.$key.' => '.$this->varExport($val);
-					}
-					$code .= ",\r\n";
-				}
-
-				$var && $code = substr_replace($code, '', -3, 1);
-				$code .= "$tabEnd]";
-				break;
-
-			case 'string':
-				$code = '\''.addcslashes($var,'\\\'').'\'';
-				break;
-
-			default:
-				$code = $var;
-		}
-
-		return $code;
 	}
 
 	protected function deleteFile($file)
