@@ -14,6 +14,7 @@ class DbCache extends Cache {
 
 	public $connection;
 	public $table = 'cache';
+	public $maxKeyLength = 64;
 	public $gcProbability = 10; //0.001%
 
 	protected $db;
