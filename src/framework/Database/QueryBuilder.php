@@ -223,6 +223,9 @@ class QueryBuilder extends Connection {
 	//Fetch one row from query result
 	public function get($fetchType=DB::FETCH_ASSOC)
 	{
+		if ($this->builder || $this->table) {
+			$this->limit(1);
+		}
 		$this->prepareQuery();
 		return parent::get($fetchType);
 	}
