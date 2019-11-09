@@ -223,13 +223,6 @@ class QueryBuilder extends Connection {
 	//Fetch one row from query result
 	public function get($fetchType=DB::FETCH_ASSOC)
 	{
-		//MUST check is builder ready before add query build condition in result fetch method for QueryBuilder,
-		//like get,fetch,fetchAll for QueryBuilder, otherwise will happend double query(SELECT * LIMIT 1)
-		//after invoke Connection::query(), because of QueryBuilder fetch methods have prepareQuery to make a query,
-		//but Connection not.
-		if ($this->builder || $this->table) {
-			$this->limit(1);
-		}
 		$this->prepareQuery();
 		return parent::get($fetchType);
 	}
