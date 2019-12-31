@@ -51,6 +51,37 @@ class QueryBuilder extends Connection {
 		return $this;
 	}
 
+	/**
+	 * Set where conditions.
+	 *
+	 * @param array|string $cond Complex where condition array or string.
+	 *
+	 * Simple condition:
+	 * ['id'=>100]
+	 * means:
+	 * `id`=100
+	 *
+	 * First element is 'AND', 'OR' mean condition connect method:
+	 * ['name'=>'hello', 'nick'=>'world'] >> `name`='hello' AND `nick`='world'
+	 * ['OR', 'name'=>'hello', 'nick'=>'world'] >> `name`='hello' OR `nick`='world'
+	 *
+	 * AND, OR support multiple nested:
+	 * ['name'=>'hello', ['OR', 'c'=>1, 'd'=>2]] >> `name`='hello' AND (`c`=1 OR `d`=2)
+	 *
+	 * IN, NOT IN:
+	 * ['name'=>['a', 'b', 'c']] >> `name` IN('a', 'b', 'c') AND
+	 * ['name !'=>['a', 'b']] >> `name` NOT IN('a', 'b')
+	 *
+	 * BETWEEN:
+	 * ['id BETWEEN'=>[100, 999]] >> `id` BETWEEN 100 AND 999
+	 *
+	 * Other symbols:
+	 * =, !=, >, >=, <, <=, EXISTS, NOT EXISTS and others
+	 * ['id >='=>100, 'live EXISTS'=>'system'] >> `id`>=100 AND `live` EXISTS ('system')
+	 *
+	 * @param null $params Unsupported yet!
+	 * @return $this
+	 */
 	public function where($cond, $params=null)
 	{
 		$this->builder['where'] = $cond;
@@ -213,14 +244,22 @@ class QueryBuilder extends Connection {
 		return $sql;
 	}
 
-	//Fetch row from query result
+	/**
+	 * Fetch row from query result
+	 *
+	 * @inheritdoc
+	 */
 	public function fetch($fetchType=DB::FETCH_ASSOC)
 	{
 		$this->prepareQuery();
 		return parent::fetch($fetchType);
 	}
 
-	//Fetch one row from query result
+	/**
+	 * Fetch first row from query result
+	 *
+	 * @inheritdoc
+	 */
 	public function get($fetchType=DB::FETCH_ASSOC)
 	{
 		$this->prepareQuery();

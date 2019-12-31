@@ -27,7 +27,7 @@ class Output
 		if ($config->get('output_gzip') &&
 			($config->get('output_gzip_force_soft') || !$this->enableHardGzip())
 		) {
-			ob_start('\\' . self::class . '::gzipEncode');
+			ob_start([self::class, 'gzipEncode']);
 			$this->mode = 'soft';
 		} else {
 			ob_start();

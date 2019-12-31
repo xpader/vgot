@@ -83,9 +83,17 @@ class Uploader {
 	/**
 	 * When save() file, auto generate a file name to destination path.
 	 * This will ignore $overwrite setting.
+	 *
 	 * @var bool
 	 */
 	public $autoName = true;
+
+	/**
+	 * Auto name generater clouser
+	 *
+	 * @var callable
+	 */
+	public $autoNameCallback = 'uniqid';
 
 	/**
 	 * Instated space use '_' when $autoName is true.
@@ -187,7 +195,7 @@ class Uploader {
 
 		//generate a unique filename when autoName is true
 		do {
-			$filename = $this->autoName ? uniqid() :
+			$filename = $this->autoName ? call_user_func($this->autoNameCallback) :
 				($this->removeSpace ? str_replace(' ', '_', $pathinfo['filename']) : $pathinfo['filename']);
 
 			if (!$this->overwriteExtension && $ext) {
