@@ -46,7 +46,7 @@ class Application
 
 		$this->_providers['view'] = [
 			'class' => 'vgot\Core\View',
-			'arguments' => [$archPath['views_path'], $archPath['common_views_path']]
+			'args' => [$archPath['views_path'], $archPath['common_views_path']]
 		];
 
 		//set config providers
@@ -79,8 +79,8 @@ class Application
 				throw new ApplicationException("Can not resolve provider '$name', provider must contain 'class' or 'callable' element.");
 			}
 
-			isset($provider['arguments']) && $args = $provider['arguments'];
-			isset($provider['propertys']) && $props = $provider['propertys'];
+			isset($provider['args']) && $args = $provider['args'];
+			isset($provider['props']) && $props = $provider['props'];
 
 		} elseif (is_string($provider) && class_exists($provider)) {
 			$class = $provider;

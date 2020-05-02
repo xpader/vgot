@@ -11,7 +11,7 @@ namespace vgot\Core;
 class Security
 {
 
-	protected $encryptMethod = 'AES-128-CBC';
+	protected $encryptMethod = 'aes-128-cbc';
 	protected $password;
 
 	public function __construct($password, $encryptMethod='AES-128-CBC')
