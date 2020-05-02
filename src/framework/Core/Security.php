@@ -14,15 +14,16 @@ class Security
 	protected $encryptMethod = 'aes-128-cbc';
 	protected $password;
 
-	public function __construct($password, $encryptMethod='AES-128-CBC')
+	public function __construct($password, $encryptMethod=null)
 	{
 		$this->password = $password;
 
-		if (!in_array($encryptMethod, openssl_get_cipher_methods())) {
-			throw new \ErrorException("Unsupport method '$encryptMethod' for secruity.");
+		if ($encryptMethod !== null) {
+			if (!in_array($encryptMethod, openssl_get_cipher_methods())) {
+				throw new \ErrorException("Unsupport method '$encryptMethod' for secruity.");
+			}
+			$this->encryptMethod = $encryptMethod;
 		}
-
-		$this->encryptMethod = $encryptMethod;
 	}
 
 	/**
