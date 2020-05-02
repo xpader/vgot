@@ -6,7 +6,7 @@
  * Time: 22:44
  */
 
-namespace vgot\Utilities;
+namespace vgot\Utils;
 
 class ArrayUtil
 {

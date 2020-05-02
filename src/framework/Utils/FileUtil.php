@@ -6,7 +6,7 @@
  * Time: 23:50
  */
 
-namespace vgot\Utilities;
+namespace vgot\Utils;
 
 class FileUtil
 {
