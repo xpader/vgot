@@ -8,7 +8,7 @@
 namespace vgot\Cache;
 
 use vgot\Exceptions\ApplicationException;
-use vgot\Utilities\ArrayUtil;
+use vgot\Utils\ArrayUtil;
 
 /**
  * File for Cache
