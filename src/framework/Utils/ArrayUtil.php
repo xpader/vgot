@@ -8,7 +8,7 @@
 
 namespace vgot\Utilities;
 
-class ArrayUtiltity
+class ArrayUtil
 {
 
 	/**

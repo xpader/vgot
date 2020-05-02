@@ -8,7 +8,7 @@
 
 namespace vgot\Utilities;
 
-class FileUtiltity
+class FileUtil
 {
 
 	public static function formatSize($filesize)

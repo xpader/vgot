@@ -22,9 +22,9 @@ return [
 			'class' => 'vgot\Cache\FileCache',
 			'arguments' => [
 				[
-					'stor_dir' => BASE_PATH.'/resource/cache',
-					'cache_in_memory' => true,
-					'dir_level' => 2
+					'storDir' => BASE_PATH.'/resource/cache',
+					'cacheInMemory' => true,
+					'dirLevel' => 2
 				]
 			]
 		],
@@ -33,11 +33,11 @@ return [
 			'arguments' => [
 				[
 					'name' => 'vgotsid',
-					'cookie_httponly' => true,
+					'cookieHttponly' => true,
 					'lifetime' => 864001,
 					'handler' => 'cache',
 					//'save_path' => 'db/sessions',
-					'save_path' => 'cache/sess'
+					'savePath' => 'cache/sess'
 				]
 			]
 		]
