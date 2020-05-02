@@ -8,7 +8,7 @@
 namespace vgot\Cache;
 
 use vgot\Exceptions\ApplicationException;
-use vgot\Utilities\ArrayUtiltity;
+use vgot\Utilities\ArrayUtil;
 
 /**
  * File for Cache
@@ -88,7 +88,7 @@ class FileCache extends Cache {
 			'expired_at' => $duration == 0 ? $duration : $now + $duration
 		];
 
-		$content = '<?php return '.ArrayUtiltity::export($data, true).';';
+		$content = '<?php return '.ArrayUtil::export($data, true).';';
 
 		if (!is_file($file)) {
 			$dir = dirname($file);
