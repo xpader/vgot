@@ -172,7 +172,8 @@ class Input
 		if (!isset($gpcs[$key])) return $defaultValue;
 		$var = $gpcs[$key];
 		if ($filter === null) return $var;
-		return $this->applyFilter($var, $filter);
+		$var = $this->applyFilter($var, $filter);
+		return ($var === false || $var === null) ? $defaultValue : $var;
 	}
 
 	/**
