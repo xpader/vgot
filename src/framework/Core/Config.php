@@ -67,17 +67,6 @@ class Config
 	}
 
 	/**
-	 * Get an exists config
-	 *
-	 * @param string $config Config name
-	 * @return array|null
-	 */
-	public function item($config)
-	{
-		return isset($this->configs[$config]) ? $this->configs[$config] : null;
-	}
-
-	/**
 	 * Get config value
 	 *
 	 * @param string $key
@@ -86,7 +75,7 @@ class Config
 	 */
 	public function get($key, $section='')
 	{
-		if ($section && !isset($this->configs[$section])) {
+		if (!isset($this->configs[$section])) {
 			$this->load($section, true);
 		}
 
@@ -100,14 +89,35 @@ class Config
 	 * @param string $key
 	 * @param mixed $value
 	 * @param string $section If set to separate space, this value must set to separate name
+	 * @param bool $autoload Load config file if section not exists.
 	 */
-	public function set($key, $value, $section='')
+	public function set($key, $value, $section='', $autoload=true)
 	{
-		if ($section != '' && !isset($this->configs[$section])) {
+		if ($autoload && !isset($this->configs[$section])) {
 			$this->load($section, true);
 		}
 
 		$this->configs[$section][$key] = $value;
+	}
+
+	/**
+	 * Add or merge k/v array to section
+	 *
+	 * @param array $configs
+	 * @param string $section
+	 * @param bool $autoload Load config file if section not exists.
+	 */
+	public function setAll($configs, $section='', $autoload=true)
+	{
+		if ($autoload && !isset($this->configs[$section])) {
+			$this->load($section, true);
+		}
+
+		if (isset($this->configs[$section])) {
+			$this->configs[$section] = array_merge($this->configs[$section], $configs);
+		} else {
+			$this->configs[$section] = $configs;
+		}
 	}
 
 	/**
