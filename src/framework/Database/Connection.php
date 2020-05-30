@@ -189,7 +189,7 @@ class Connection
 	public function value()
 	{
 		$row = $this->get(DB::FETCH_NUM);
-		return $row[0];
+		return $row ? $row[0] : null;
 	}
 
 	/**

@@ -74,6 +74,8 @@ abstract class DriverInterface {
 	 * @param mixed $query
 	 * @param int $fetchType
 	 * @return array|false|null
+	 * Return false when failed.
+	 * Return null when no result.
 	 */
 	abstract public function fetch($query, $fetchType);
 

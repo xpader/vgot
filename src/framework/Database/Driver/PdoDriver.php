@@ -55,7 +55,9 @@ class PdoDriver extends DriverInterface {
 				$dsn = array();
 
 				foreach ($dsnp as $k => $v) {
-					$dsn[] = $k.'='.$v;
+					if ($v !== null) {
+						$dsn[] = $k . '=' . $v;
+					}
 				}
 
 				$dsn = $config['type'].':'.join(';',$dsn);
@@ -156,7 +158,8 @@ class PdoDriver extends DriverInterface {
 		}
 
 		$fetchType = $this->getFetchType($fetchType);
-		return $query->fetch($fetchType);
+		$result = $query->fetch($fetchType);
+		return $result !== false ? $result : null;
 	}
 
 	public function fetchAll($query, $fetchType=DB::FETCH_ASSOC)
@@ -185,7 +188,7 @@ class PdoDriver extends DriverInterface {
 			case DB::FETCH_ASSOC: return PDO::FETCH_ASSOC; break;
 			case DB::FETCH_NUM: return PDO::FETCH_NUM; break;
 			case DB::FETCH_BOTH: return PDO::FETCH_BOTH; break;
-			default: return PDO::FETCH_ASSOC;;
+			default: return PDO::FETCH_ASSOC;
 		}
 	}
 
