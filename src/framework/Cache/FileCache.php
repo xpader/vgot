@@ -136,34 +136,32 @@ class FileCache extends Cache {
 		if (!$force && mt_rand(0, 1000000) >= $this->gcProbability) {
 			return;
 		}
-
 		$now = time();
+		$this->gcr($this->storDir, $now);
+	}
 
-		$gcr = function($path) use (&$gcr, $now) {
-			if (($handle = opendir($path)) !== false) {
-				while (($file = readdir($handle)) !== false) {
-					if ($file == '.' || $file == '..' || substr($file, 0, 1) == '.') {
-						continue;
-					}
+	protected function gcr($path, $now) {
+		if (($handle = opendir($path)) !== false) {
+			while (($file = readdir($handle)) !== false) {
+				if ($file == '.' || $file == '..' || substr($file, 0, 1) == '.') {
+					continue;
+				}
 
-					$fullPath = $path . DIRECTORY_SEPARATOR . $file;
+				$fullPath = $path . DIRECTORY_SEPARATOR . $file;
 
-					if (is_dir($fullPath)) {
-						$gcr($fullPath);
-						@rmdir($fullPath);
-					} else {
-						$data = @include $fullPath;
-						if (!is_array($data) || ($data['expired_at'] > 0 && $data['expired_at'] < $now)) {
-							unlink($fullPath);
-							$this->deleteOpcache($fullPath);
-						}
+				if (is_dir($fullPath)) {
+					$this->gcr($fullPath, $now);
+					@rmdir($fullPath);
+				} else {
+					$data = @include $fullPath;
+					if (!is_array($data) || ($data['expired_at'] > 0 && $data['expired_at'] < $now)) {
+						unlink($fullPath);
+						$this->deleteOpcache($fullPath);
 					}
 				}
-				closedir($handle);
 			}
-		};
-
-		$gcr($this->storDir);
+			closedir($handle);
+		}
 	}
 
 	protected function getFilename($key)

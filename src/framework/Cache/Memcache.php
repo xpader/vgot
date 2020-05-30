@@ -93,7 +93,7 @@ class Memcache extends Cache {
 	public function get($key, $defaultValue=null)
 	{
 		$key = $this->buildKey($key);
-		$value = $this->memcache->get($key, $this->flag);
+		$value = $this->memcache->get($key);
 		return $value !== false ? $value : $defaultValue;
 	}
 
@@ -101,7 +101,7 @@ class Memcache extends Cache {
 	{
 		$key = $this->buildKey($key);
 		$expiredAt = $duration == 0 ? $duration : time() + $duration;
-		return $this->memcache->set($key, $value, $this->flag, $expiredAt);
+		return $this->memcache->set($key, $value, MEMCACHE_COMPRESSED, $expiredAt);
 	}
 
 	public function delete($key)
