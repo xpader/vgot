@@ -11,6 +11,10 @@ namespace vgot\Database\Driver;
 use vgot\Database\DB;
 use vgot\Database\DriverInterface;
 
+/**
+ * Class MysqliDriver
+ * @property \mysqli $conn
+ */
 class MysqliDriver extends DriverInterface {
 
 	public $type = 'mysql';
@@ -42,7 +46,7 @@ class MysqliDriver extends DriverInterface {
 
 	public function ping()
 	{
-		return ($this->conn instanceof \mysqli) && mysqli_ping($this->conn);
+		return ($this->conn instanceof \mysqli) && $this->conn->ping();
 	}
 
 	public function getErrorCode()
@@ -57,27 +61,27 @@ class MysqliDriver extends DriverInterface {
 
 	public function query($sql)
 	{
-		return mysqli_query($this->conn, $sql);
+		return $this->conn->query($sql);
 	}
 
 	public function exec($sql)
 	{
-		return mysqli_real_query($this->conn, $sql) ? mysqli_affected_rows($this->conn) : false;
+		return $this->conn->real_query($sql) ? $this->conn->affected_rows : false;
 	}
 
 	public function beginTransaction()
 	{
-		return PHP_VERSION_ID >= 50500 ? mysqli_begin_transaction($this->conn) : mysqli_real_query($this->conn, 'BEGIN');
+		return PHP_VERSION_ID >= 50500 ? $this->conn->begin_transaction() : $this->conn->real_query('BEGIN');
 	}
 
 	public function commit()
 	{
-		return mysqli_commit($this->conn);
+		return $this->conn->commit();
 	}
 
 	public function rollback()
 	{
-		return mysqli_rollback($this->conn);
+		return $this->conn->rollback();
 	}
 
 	public function fetch($query, $fetchType=DB::FETCH_ASSOC)
@@ -87,7 +91,7 @@ class MysqliDriver extends DriverInterface {
 		}
 
 		$fetchType = $this->getFetchType($fetchType);
-		return mysqli_fetch_array($query, $fetchType);
+		return $query->fetch_array($fetchType);
 	}
 
 	public function fetchAll($query, $fetchType=DB::FETCH_ASSOC)
@@ -97,17 +101,17 @@ class MysqliDriver extends DriverInterface {
 		}
 
 		$fetchType = $this->getFetchType($fetchType);
-		return mysqli_fetch_all($query, $fetchType);
+		return $query->fetch_all($fetchType);
 	}
 
 	public function insertId()
 	{
-		return mysqli_insert_id($this->conn);
+		return $this->conn->insert_id;
 	}
 
 	public function quote($str)
 	{
-		return '\''.mysqli_escape_string($this->conn, $str).'\'';
+		return '\''.$this->conn->real_escape_string($str).'\'';
 	}
 
 	protected function getFetchType($fetchType)
