@@ -111,20 +111,26 @@ class Sqlite3Driver extends DriverInterface {
 		return $query->fetchArray($fetchType) ?: null;
 	}
 
-	public function fetchAll($query, $fetchType=DB::FETCH_ASSOC)
+	public function fetchAll($result, $fetchType=DB::FETCH_ASSOC)
 	{
-		if (!($query instanceof \SQLite3Result)) {
+		if (!($result instanceof \SQLite3Result)) {
 			return false;
 		}
 
 		$fetchType = $this->getFetchType($fetchType);
-		$result = [];
-
-		while ($row = $query->fetchArray($fetchType)) {
-			$result[] = $row;
+		$rows = [];
+		while ($row = $result->fetchArray($fetchType)) {
+			$rows[] = $row;
 		}
+		$result->finalize();
 
 		return $result;
+	}
+
+	public function free($result) {
+		if ($result instanceof \SQLite3Result) {
+			$result->finalize();
+		}
 	}
 
 	public function insertId()

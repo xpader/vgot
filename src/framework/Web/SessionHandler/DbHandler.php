@@ -78,7 +78,7 @@ class DbHandler implements \SessionHandlerInterface
 
 	public function read($sid)
 	{
-		$data = $this->db->select('data')->from($this->table)->where(['sid'=>$sid])->fetchColumn();
+		$data = $this->db->select('data')->from($this->table)->where(['sid'=>$sid])->scalar();
 		return $data ?: '';
 	}
 

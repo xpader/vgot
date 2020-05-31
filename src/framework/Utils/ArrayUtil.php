@@ -33,6 +33,10 @@ class ArrayUtil
 	{
 		switch (gettype($var)) {
 			case 'array':
+				if (count($var) == 0) {
+					return '[]';
+				}
+
 				$tabEnd = str_repeat("\t", $level);
 				$tab = $tabEnd."\t";
 				$code = "[\r\n";
@@ -49,21 +53,16 @@ class ArrayUtil
 
 				$var && $code = substr_replace($code, '', -3, 1);
 				$code .= "$tabEnd]";
-				break;
+				return $code;
 			case 'string':
-				$code = '\''.addcslashes($var,'\\\'').'\'';
-				break;
+				return '\''.addcslashes($var,'\\\'').'\'';
 			case 'boolean':
-				$code = $var ? 'true' : 'false';
-				break;
+				return $var ? 'true' : 'false';
 			case 'NULL':
-				$code = 'null';
-				break;
+				return 'null';
 			default:
-				$code = $var;
+				return $var;
 		}
-
-		return $code;
 	}
 
 }

@@ -84,14 +84,14 @@ class MysqliDriver extends DriverInterface {
 		return $this->conn->rollback();
 	}
 
-	public function fetch($query, $fetchType=DB::FETCH_ASSOC)
+	public function fetch($result, $fetchType=DB::FETCH_ASSOC)
 	{
-		if (!($query instanceof \mysqli_result)) {
+		if (!($result instanceof \mysqli_result)) {
 			return false;
 		}
 
 		$fetchType = $this->getFetchType($fetchType);
-		return $query->fetch_array($fetchType);
+		return $result->fetch_array($fetchType);
 	}
 
 	public function fetchAll($query, $fetchType=DB::FETCH_ASSOC)
@@ -101,7 +101,16 @@ class MysqliDriver extends DriverInterface {
 		}
 
 		$fetchType = $this->getFetchType($fetchType);
-		return $query->fetch_all($fetchType);
+		$result = $query->fetch_all($fetchType);
+		$query->free();
+
+		return $result;
+	}
+
+	public function free($result) {
+		if ($result instanceof \mysqli_result) {
+			$result->free();
+		}
 	}
 
 	public function insertId()

@@ -38,7 +38,7 @@ class Connection
 	 */
 	protected $indexBy;
 
-	protected $lastQuery = null;
+	protected $result = null;
 
 	protected $queryRecords = [];
 
@@ -87,22 +87,22 @@ class Connection
 	{
 		//debug
 		if (!empty($this->config['debug'])) {
-			$qst = array_sum(explode(' ', microtime()));
+			$qst = microtime(true);
 		}
 
-		$query = $this->di->query($sql);
+		$result = $this->di->query($sql);
 
 		if (isset($qst)) {
-			$qet = array_sum(explode(' ', microtime()));
+			$qet = microtime(true);
 			$queryTime = round(($qet - $qst), 6);
 			$this->queryRecords[] = ['sql'=>$sql,'time_used'=>$queryTime];
 		}
 
-		if ($query === false) {
+		if ($result === false) {
 			throw new DatabaseException("Query error", $this->di, $sql);
 		}
 
-		$this->lastQuery = $query;
+		$this->result = $result;
 
 		return $this;
 	}
@@ -119,13 +119,13 @@ class Connection
 	{
 		//debug
 		if (!empty($this->config['debug'])) {
-			$qst = array_sum(explode(' ', microtime()));
+			$qst = microtime(true);
 		}
 
 		$affected = $this->di->exec($sql);
 
 		if (isset($qst)) {
-			$qet = array_sum(explode(' ', microtime()));
+			$qet = microtime(true);
 			$queryTime = round(($qet - $qst), 6);
 			$this->queryRecords[] = ['sql'=>$sql,'time_used'=>$queryTime];
 		}
@@ -134,7 +134,7 @@ class Connection
 			throw new DatabaseException("Query error", $this->di, $sql);
 		}
 
-		$this->lastQuery = null;
+		$this->result = null;
 
 		return $affected;
 	}
@@ -152,10 +152,10 @@ class Connection
 	 */
 	public function fetch($fetchType=DB::FETCH_ASSOC)
 	{
-		$result = $this->di->fetch($this->lastQuery, $fetchType);
+		$result = $this->di->fetch($this->result, $fetchType);
 
 		if ($result === false) {
-			$this->lastQuery = null;
+			$this->result = null;
 		}
 
 		return $result;
@@ -170,13 +170,14 @@ class Connection
 	 */
 	public function get($fetchType=DB::FETCH_ASSOC)
 	{
-		$result = $this->di->fetch($this->lastQuery, $fetchType);
+		$result = $this->di->fetch($this->result, $fetchType);
 
 		if ($result === false) {
 			throw new DatabaseException("Fetch not a query result.");
 		}
 
-		$this->lastQuery = null;
+		$this->di->free($result);
+		$this->result = null;
 
 		return $result;
 	}
@@ -184,12 +185,15 @@ class Connection
 	/**
 	 * Return first column value in row
 	 *
+	 * @param int|string $col
 	 * @return mixed
+	 * @throws
 	 */
-	public function value()
+	public function scalar($col=0)
 	{
-		$row = $this->get(DB::FETCH_NUM);
-		return $row ? $row[0] : null;
+		$fetchType = is_numeric($col) ? DB::FETCH_NUM : DB::FETCH_ASSOC;
+		$row = $this->get($fetchType);
+		return $row ? $row[$col] : null;
 	}
 
 	/**
@@ -213,8 +217,8 @@ class Connection
 	 */
 	public function fetchAll($fetchType=DB::FETCH_ASSOC)
 	{
-		$result = $this->di->fetchAll($this->lastQuery, $fetchType);
-		$this->lastQuery = null;
+		$result = $this->di->fetchAll($this->result, $fetchType);
+		$this->result = null;
 
 		//index by
 		if ($this->indexBy && $result) {
@@ -239,7 +243,7 @@ class Connection
 	}
 
 	/**
-	 * Fetch a column value in first result row
+	 * Fetch column from all rows
 	 *
 	 * @param int|string $col
 	 * @return mixed|bool|null
@@ -247,15 +251,22 @@ class Connection
 	 */
 	public function fetchColumn($col=0)
 	{
-		$val = $this->di->fetchColumn($this->lastQuery, $col, is_numeric($col) ? DB::FETCH_NUM : DB::FETCH_ASSOC);
+		$cols = [];
 
-		if ($val === false) {
-			throw new DatabaseException('Fetch column error', "No found column '$col' in data row.");
+		$fetchType = is_numeric($col) ? DB::FETCH_NUM : DB::FETCH_ASSOC;
+
+		while ($row = $this->di->fetch($this->result, $fetchType)) {
+			if ($this->indexBy) {
+				$cols[$row[$this->indexBy]] = $row[$col];
+			} else {
+				$cols[] = $row[$col];
+			}
 		}
 
-		$this->lastQuery = null;
+		$this->di->free($this->result);
+		$this->indexBy = $this->result = null;
 
-		return $val;
+		return $cols;
 	}
 
 	/**
@@ -293,7 +304,7 @@ class Connection
 	 */
 	public function close()
 	{
-		$this->lastQuery = null;
+		$this->result = null;
 		$this->di && $this->di->close();
 	}
 

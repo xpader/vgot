@@ -273,7 +273,7 @@ class QueryBuilder extends Connection {
 		return parent::fetchAll($fetchType);
 	}
 
-	//Fetch a column value in first result row
+	//Fetch column from all rows
 	public function fetchColumn($col=0)
 	{
 		$this->prepareQuery();
@@ -295,11 +295,12 @@ class QueryBuilder extends Connection {
 	public function count($field='*')
 	{
 		$this->select("COUNT($field)", false);
-		return $this->fetchColumn();
+		return $this->scalar();
 	}
 
 	/**
 	 * Build and do query for fetch result
+	 * @throws
 	 */
 	protected function prepareQuery()
 	{

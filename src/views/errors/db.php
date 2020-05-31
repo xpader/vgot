@@ -5,7 +5,7 @@
  * Date: 2017/5/1
  * Time: 03:23
  *
- * @var $exception Exception
+ * @var $exception \vgot\Exceptions\DatabaseException
  */
 ?>
 <!DOCTYPE html>
@@ -21,8 +21,12 @@ pre {background-color:#FFF; padding:10px; overflow:auto; font-size:14px;}
 </head>
 <body>
 <h1>Database Error</h1>
-<pre><h2><?=$exception->getMessage()?></h2>
-at: <?=$exception->getFile()?> on line <?=$exception->getLine()?></pre>
+<pre>
+	<h2><?=$exception->getMessage()?></h2>
+	<h3><?=$exception->getError()?></h3>
+	<p><?=$exception->getSql()?></p>
+	at: <?=$exception->getFile()?> on line <?=$exception->getLine()?>
+</pre>
 <div>
     <table>
         <thead>

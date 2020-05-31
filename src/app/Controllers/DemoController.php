@@ -58,19 +58,19 @@ class DemoController extends \vgot\Core\Controller
 		//$result = $db->offset(1)->limit(1)->fetchAll();
 		//print_r($result);
 
-		$result = $db->from('text')->alias('t')->orderBy(['id'=>SORT_DESC])->limit(1, 2)->fetchAll();
+		$result = $db->from('text')->alias('t')->orderBy(['id'=>SORT_DESC])->limit(1, 2)->scalar();
 		print_r($result);
 
 		$result = $db->select('  min ( id ) as min_id , sum(t.id ) as sum, max( id) max_id')->from('text')->alias('t')->fetch();
 		print_r($result);
 
-		$result = $db->select('     uuid (     )     uuid  ')->fetchColumn();
+		$result = $db->select('     uuid (     )     uuid  ')->scalar();
 		print_r($result."\n");
 
-		$result = $db->select('*')->from('  zentao  .  zt_grouppriv   as    a   ')->groupBy('company,group')->fetchAll();
+		$result = $db->select('*')->from('  zentao  .  zt_grouppriv   as    a   ')->groupBy('module,group')->fetchAll();
 		print_r($result);
 
-		$db->where(['id'=>60])->update('text', ['ss'=>uniqid()]);
+		$db->where(['id'=>60])->update('text', ['id'=>3]);
 
 		$result = $db->leftJoin('t2 w', ['and', 't.id=w.id', ['or', 't.id'=>60, 't.text'=>'H']])->from('text t')->where(['t.id'=>60])->fetch();
 		print_r($result);
@@ -174,6 +174,11 @@ class DemoController extends \vgot\Core\Controller
 	public function url()
 	{
 		echo Url::site(['abc/deep/def', 'hello'=>'world', 'p'=>'arams']);
+	}
+
+	public function testPdoReturnFalse() {
+		$value = $this->db->from('urls')->where(['id'=>213])->value();
+		var_dump($value);
 	}
 
 }

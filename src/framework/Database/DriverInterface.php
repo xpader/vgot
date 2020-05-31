@@ -71,13 +71,20 @@ abstract class DriverInterface {
 	/**
 	 * Fetch one row
 	 *
-	 * @param mixed $query
+	 * @param mixed $result
 	 * @param int $fetchType
 	 * @return array|false|null
 	 * Return false when failed.
 	 * Return null when no result.
 	 */
-	abstract public function fetch($query, $fetchType);
+	abstract public function fetch($result, $fetchType);
+
+	/**
+	 * Free result
+	 *
+	 * @param mixed $result
+	 */
+	abstract public function free($result);
 
 	/**
 	 * Get last insert id
@@ -92,27 +99,7 @@ abstract class DriverInterface {
 
 	abstract public function getErrorMessage();
 
-	public function fetchAll($query, $fetchType)
-	{
-		$result = [];
-
-		while ($row = $this->fetch($query, $fetchType)) {
-			$result[] = $row;
-		}
-
-		return $result;
-	}
-
-	public function fetchColumn($query, $col, $fetchType)
-	{
-		$row = $this->fetch($query, $fetchType);
-
-		if ($row) {
-			return isset($row[$col]) ? $row[$col] : false;
-		}
-
-		return $row;
-	}
+	abstract public function fetchAll($query, $fetchType);
 
 	public function getConnection()
 	{

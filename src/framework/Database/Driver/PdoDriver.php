@@ -162,14 +162,18 @@ class PdoDriver extends DriverInterface {
 		return $result !== false ? $result : null;
 	}
 
-	public function fetchAll($query, $fetchType=DB::FETCH_ASSOC)
+	public function fetchAll($result, $fetchType=DB::FETCH_ASSOC)
 	{
-		if (!($query instanceof PDOStatement)) {
+		if (!($result instanceof PDOStatement)) {
 			return false;
 		}
 
 		$fetchType = $this->getFetchType($fetchType);
-		return $query->fetchAll($fetchType);
+		return $result->fetchAll($fetchType);
+	}
+
+	public function free($result) {
+		//Pdo does not have an free method.
 	}
 
 	public function insertId()
