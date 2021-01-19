@@ -1,0 +1,13 @@
+{
+    "name": "pader/vgot",
+    "description": "vgot php framework",
+    "type": "project",
+    "license": "Apache-2.0",
+    "authors": [
+        {
+            "name": "Pader",
+            "email": "ypnow@163.com"
+        }
+    ],
+    "require": {}
+}

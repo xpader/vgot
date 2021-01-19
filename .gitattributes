@@ -1,0 +1,7 @@
+doc/ export-ignore
+src/app/ export-ignore
+src/config/ export-ignore
+src/public/ export-ignore
+src/public/ export-ignore
+src/resource/ export-ignore
+src/views/ export-ignore
