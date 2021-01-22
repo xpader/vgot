@@ -17,27 +17,38 @@ use vgot\Utils\ArrayUtil;
 class FileCache extends Cache {
 
 	public $storDir;
-	public $dirLevel = 0;
-	public $gcProbability = 10; //0.001%
+	public $dirLevel;
+
+	/**
+	 * Garbage collect probability
+	 * 10 mean 0.001%
+	 * @var int
+	 */
+	public $gcProbability;
 
 	/**
 	 * Cache in current request process memory
 	 * It's better performance for same key get in one request, but more memory used and not cache stable.
 	 * @var bool
 	 */
-	public $cacheInMemory = false;
+	public $cacheInMemory;
 
 	protected $_cache = [];
 
-	public function __construct($config)
+	/**
+	 * File Cache Constructor
+	 *
+	 * @param string $storDir Cache file storage directory
+	 * @param int $dirLevel Cache file storage layer level, max is 16;
+	 * @param int $gcProbability Garbage collect probability, 10 mean 0.001%
+	 * @param bool $cacheInMemory See cacheInMemory property.
+	 */
+	public function __construct($storDir, $dirLevel=0, $gcProbability=10, $cacheInMemory=false)
 	{
-		configClass($this, $config);
-
-		if ($this->storDir === null) {
-			throw new ApplicationException('$storDir must be configure when using '.__CLASS__);
-		}
-
-		$this->dirLevel > 16 && $this->dirLevel = 16;
+		$this->storDir = $storDir;
+		$this->dirLevel = $dirLevel < 16 ? $dirLevel : 16;
+		$this->gcProbability = $gcProbability;
+		$this->cacheInMemory = $cacheInMemory;
 	}
 
 	public function get($key, $defaultValue=null)

@@ -15,32 +15,28 @@ return [
 	'providers' => [
 		'security' => [
 			'class' => 'vgot\Core\Security',
-			'args' => ['test'],
-			'props' => [
+			'args' => [
+				'password' => 'test',
 				'encryptMethod' => 'chacha20'
 			]
 		],
 		'cache' => [
 			'class' => 'vgot\Cache\FileCache',
 			'args' => [
-				[
-					'storDir' => BASE_PATH.'/resource/cache',
-					'cacheInMemory' => true,
-					'dirLevel' => 2
-				]
+				'storDir' => BASE_PATH.'/resource/cache',
+				'cacheInMemory' => true,
+				'dirLevel' => 2
 			]
 		],
 		'session' => [
 			'class' => 'vgot\Web\Session',
-			'args' => [
-				[
-					'name' => 'vgotsid',
-					'cookieHttponly' => true,
-					'lifetime' => 864001,
-					'handler' => 'cache',
-					//'save_path' => 'db/sessions',
-					'savePath' => 'cache/sess'
-				]
+			'props' => [
+				'name' => 'vgotsid',
+				'cookieHttponly' => true,
+				'lifetime' => 864001,
+				'handler' => 'cache',
+				//'save_path' => 'db/sessions',
+				'savePath' => 'cache/sess'
 			]
 		]
 	],

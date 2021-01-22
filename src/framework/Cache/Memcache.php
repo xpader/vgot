@@ -21,9 +21,24 @@ use vgot\Exceptions\ApplicationException;
  */
 class Memcache extends Cache {
 
+	/**
+	 * @var string
+	 */
 	public $host;
-	public $port = 11211;
-	public $pconnect = false;
+
+	/**
+	 * @var int
+	 */
+	public $port;
+
+	/**
+	 * @var bool
+	 */
+	public $pconnect;
+
+	/**
+	 * @var int
+	 */
 	public $flag = 0;
 
 	/**
@@ -31,9 +46,12 @@ class Memcache extends Cache {
 	 */
 	public $memcache;
 
-	public function __construct($config)
+	public function __construct($host, $port=11211, $pconnect=false, $flag=0)
 	{
-		configClass($this, $config);
+		$this->host = $host;
+		$this->port = $port;
+		$this->pconnect = $pconnect;
+		$this->flag = $flag;
 		$this->connect();
 	}
 

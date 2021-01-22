@@ -14,7 +14,7 @@ use vgot\Exceptions\ApplicationException;
 class Redis extends Cache {
 
 	public $host;
-	public $port = 6379;
+	public $port;
 	public $password;
 	public $pconnect = false;
 	public $database;
@@ -37,9 +37,13 @@ class Redis extends Cache {
 	 */
 	public $redis;
 
-	public function __construct($config)
+	public function __construct($host, $port=6379, $password=null, $pconnect=false, $database=null)
 	{
-		configClass($this, $config);
+		$this->host = $host;
+		$this->port = $port;
+		$this->password = $password;
+		$this->pconnect = $pconnect;
+		$this->database = $database;
 		$this->connect();
 	}
 

@@ -46,7 +46,10 @@ class Application
 
 		$this->_providers['view'] = [
 			'class' => 'vgot\Core\View',
-			'args' => [$archPath['views_path'], $archPath['common_views_path']]
+			'args' => [
+				'viewsPath' => $archPath['views_path'],
+				'commonViewsPath' => $archPath['common_views_path']
+			]
 		];
 
 		//set config providers
@@ -93,7 +96,33 @@ class Application
 		}
 
 		if ($class) {
-			$this->$name = $args ? (new \ReflectionClass($class))->newInstanceArgs($args) : new $class;
+			if ($args) {
+				$ref = new \ReflectionClass($class);
+				$constructor = $ref->getConstructor();
+
+				if ($constructor === null || count($args) == 0) {
+					$this->$name = $ref->newInstance();
+				} else {
+					$params = $constructor->getParameters();
+					if (count($params) == 0) {
+						$this->$name = $ref->newInstance();
+					} else {
+						$constructArgs = [];
+						foreach ($params as $param) {
+							if (isset($args[$param->name])) {
+								$constructArgs[] = $args[$param->name];
+							} elseif ($param->isDefaultValueAvailable()) {
+								break;
+							} else {
+								throw new \InvalidArgumentException("Can not instance '{$class}': No construct value for argument '{$param->name}'.");
+							}
+						}
+						$this->$name = $ref->newInstanceArgs($constructArgs);
+					}
+				}
+			} else {
+				$this->$name = new $class;
+			}
 
 			if (is_array($props)) {
 				foreach ($props as $k => $v) {
@@ -106,23 +135,6 @@ class Application
 
 		return $this->$name;
 	}
-
-	/**
-	 * Protect system core not being rewritten
-	 *
-	 * The system core can be only write once.
-	 *
-	 * @param string $name
-	 * @param mixed $value
-	 */
-	//public function __set($name, $value)
-	//{
-	//	if (!isset($this->$name)) {
-	//		$this->$name = $value;
-	//	} else {
-	//		trigger_error("Uncaught Error: Cannot access protected property \\vgot\\Core\\Application::\${$name}", E_USER_WARNING);
-	//	}
-	//}
 
 	/**
 	 * 执行应用

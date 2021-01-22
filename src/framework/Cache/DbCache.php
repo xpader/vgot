@@ -12,17 +12,41 @@ use vgot\Database\DB;
 
 class DbCache extends Cache {
 
+	/**
+	 * @var string
+	 */
 	public $connection;
-	public $table = 'cache';
+
+	/**
+	 * @var string
+	 */
+	public $table;
+
+	/**
+	 * @var int
+	 */
 	public $maxKeyLength = 64;
+
+	/**
+	 * @var int
+	 */
 	public $gcProbability = 10; //0.001%
 
 	protected $db;
 	protected $tableName;
 
-	public function __construct($config=[])
+	/**
+	 * DbCache constructor.
+	 * @param string $table
+	 * @param string $connection
+	 * @param int $gcProbability Garbage collect probability, 10 mean 0.001%
+	 * @throws \vgot\Exceptions\DatabaseException
+	 */
+	public function __construct($table='cache', $connection=null, $gcProbability=10)
 	{
-		configClass($this, $config);
+		$this->table = $table;
+		$this->connection = $connection;
+		$this->gcProbability = $gcProbability;
 
 		//To use DbCache, the db connection must use query_builder.
 		$this->db = DB::connection($this->connection, true);
